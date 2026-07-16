@@ -90,6 +90,9 @@ CREATE TABLE app_config (
 -- 3. INDEXES
 -- ========================
 
+-- Enable trigram extension for fuzzy search (must be before trgm indexes)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE INDEX idx_persons_deleted ON persons(deleted);
 CREATE INDEX idx_persons_english_name ON persons(english_name);
 CREATE INDEX idx_persons_urdu_name ON persons(urdu_name);
@@ -351,12 +354,6 @@ CREATE POLICY "Editors and admins can update config"
   TO authenticated
   USING (can_edit(auth.uid()))
   WITH CHECK (can_edit(auth.uid()));
-
--- ========================
--- 7. ENABLE TRIGRAM EXTENSION (for search)
--- ========================
-
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ========================
 -- 8. INITIAL DATA
