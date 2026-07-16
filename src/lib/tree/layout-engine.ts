@@ -209,7 +209,7 @@ export function buildTreeLayout(
         const rightUnions = myUnions.slice(leftCount);
 
         // Layout left unions (from rightmost near center to leftmost)
-        let limitLeft = centerX - NODE_WIDTH / 2 - H_GAP;
+        let limitLeft = centerX - H_GAP / 2;
         leftUnions.forEach((union) => {
             if (processedUnions.has(union.id)) return;
             processedUnions.add(union.id);
@@ -302,7 +302,7 @@ export function buildTreeLayout(
         });
 
         // Layout right unions (from leftmost near center to rightmost)
-        let limitRight = centerX + NODE_WIDTH / 2 + H_GAP;
+        let limitRight = centerX + H_GAP / 2;
         rightUnions.forEach((union) => {
             if (processedUnions.has(union.id)) return;
             processedUnions.add(union.id);
