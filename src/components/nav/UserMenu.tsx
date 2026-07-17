@@ -8,14 +8,16 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { LogIn, LogOut, Shield } from 'lucide-react';
+import { LogIn, LogOut, Shield, Users } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n/context';
 
 export function UserMenu() {
-    const { user, role, signOut } = useAuth();
+    const { user, role, isAdmin, signOut } = useAuth();
     const { t } = useI18n();
+    const router = useRouter();
 
     if (!user) {
         return (
@@ -29,7 +31,18 @@ export function UserMenu() {
         );
     }
 
-    const initials = (user.email || 'U')[0].toUpperCase();
+    const fullName =
+        typeof user.user_metadata?.full_name === 'string'
+            ? user.user_metadata.full_name.trim()
+            : '';
+    const initials = fullName
+        ? fullName
+            .split(/\s+/)
+            .slice(0, 2)
+            .map((part) => part[0])
+            .join('')
+            .toUpperCase()
+        : (user.email || 'U')[0].toUpperCase();
 
     return (
         <DropdownMenu>
@@ -42,13 +55,27 @@ export function UserMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
                 <div className="px-3 py-2">
-                    <p className="text-sm font-medium truncate">{user.email}</p>
+                    {fullName && (
+                        <p className="text-sm font-medium truncate">{fullName}</p>
+                    )}
+                    <p className={fullName ? 'text-xs text-gray-500 truncate' : 'text-sm font-medium truncate'}>
+                        {user.email}
+                    </p>
                     <Badge variant="secondary" className="mt-1 text-xs">
                         <Shield className="w-3 h-3 mr-1" />
                         {t(`role.${role}`)}
                     </Badge>
                 </div>
                 <DropdownMenuSeparator />
+                {isAdmin && (
+                    <DropdownMenuItem
+                        onClick={() => router.push('/admin/users')}
+                        className="cursor-pointer"
+                    >
+                        <Users className="w-4 h-4 mr-2" />
+                        {t('nav.manageUsers')}
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={signOut} className="text-red-600 cursor-pointer">
                     <LogOut className="w-4 h-4 mr-2" />
                     {t('auth.logout')}

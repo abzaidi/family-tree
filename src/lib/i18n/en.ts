@@ -25,6 +25,22 @@ export const en: TranslationStrings = {
     'nav.expandAll': 'Expand All',
     'nav.collapseAll': 'Collapse All',
     'nav.language': 'Language',
+    'nav.manageUsers': 'Manage users',
+
+    // Admin
+    'admin.usersTitle': 'User Management',
+    'admin.usersSubtitle': 'View signed-up users and update their permissions',
+    'admin.backToTree': 'Back to tree',
+    'admin.name': 'Name',
+    'admin.email': 'Email',
+    'admin.joined': 'Joined',
+    'admin.role': 'Role',
+    'admin.refresh': 'Refresh',
+    'admin.noUsers': 'No users found',
+    'admin.noName': 'No name',
+    'admin.noEmail': 'No email',
+    'admin.you': 'You',
+    'admin.userCount': '{count} user(s)',
 
     // Person
     'person.englishName': 'English Name',

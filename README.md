@@ -22,6 +22,12 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
    INSERT INTO user_roles (user_id, role)
    VALUES ('YOUR_USER_UUID_HERE', 'admin');
    ```
+5. If you already ran an older schema before admin user management existed, also run
+   `migrations/supabase-admin-users.sql` once in the SQL Editor. Fresh installs that
+   used the current `supabase-schema.sql` already include these functions and triggers.
+6. Existing projects should run `migrations/supabase-user-names.sql` once to add names
+   to the admin user list and backfill the initial account. New signups store their
+   full name in Supabase Auth metadata automatically.
 
 ### 2. Environment Configuration
 1. Rename/copy `.env.local.example` to `.env.local`:
@@ -48,8 +54,9 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
 ---
 
 ## Project Structure
-- `src/app/` — Pages and layout routers, including `/login`, `/signup`, and the home canvas.
+- `src/app/` — Pages and layout routers, including `/`, `/login`, `/signup`, and `/admin/users`.
 - `src/components/` — UI modular components:
+  - `admin/` — Admin-only user management UI.
   - `nav/` — Search interface, Language Toggle, and User Menus.
   - `panels/` — Details drawer, add/edit/delete modals.
   - `tree/` — React Flow Canvas and Custom Node layers (`PersonNode`, `UnionNode`).
@@ -57,4 +64,4 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
 - `src/lib/` — Shared libraries, i18n configurations, and the `tree/` layout routing engine.
 - `src/store/` — Zustand global tree rendering states.
 - `src/types/` — Global TypeScript definitions.
-- `migrations/` — PostgreSQL schema, RLS updates, and test seed/cleanup scripts.
+- `migrations/` — PostgreSQL schema, RLS updates, admin user RPCs, and test seed/cleanup scripts.

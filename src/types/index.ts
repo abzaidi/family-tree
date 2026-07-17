@@ -40,6 +40,14 @@ export interface UserRoleRecord {
   created_at: string;
 }
 
+export interface AppUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  created_at: string;
+  role: UserRole;
+}
+
 export interface AuditLogEntry {
   id: string;
   user_id: string;

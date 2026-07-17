@@ -25,6 +25,22 @@ export const ur: TranslationStrings = {
     'nav.expandAll': 'سب کھولیں',
     'nav.collapseAll': 'سب بند کریں',
     'nav.language': 'زبان',
+    'nav.manageUsers': 'صارفین کا انتظام',
+
+    // Admin
+    'admin.usersTitle': 'صارفین کا انتظام',
+    'admin.usersSubtitle': 'سائن اپ شدہ صارفین دیکھیں اور ان کی اجازتیں تبدیل کریں',
+    'admin.backToTree': 'شجرے پر واپس',
+    'admin.name': 'نام',
+    'admin.email': 'ای میل',
+    'admin.joined': 'شمولیت',
+    'admin.role': 'کردار',
+    'admin.refresh': 'تازہ کریں',
+    'admin.noUsers': 'کوئی صارف نہیں ملا',
+    'admin.noName': 'نام نہیں',
+    'admin.noEmail': 'ای میل نہیں',
+    'admin.you': 'آپ',
+    'admin.userCount': '{count} صارف',
 
     // Person
     'person.englishName': 'انگریزی نام',

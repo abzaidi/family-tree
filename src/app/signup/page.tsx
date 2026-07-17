@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 
 export default function SignupPage() {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,6 +22,11 @@ export default function SignupPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!name.trim()) {
+            toast.error('Name is required');
+            return;
+        }
 
         if (password !== confirmPassword) {
             toast.error('Passwords do not match');
@@ -39,6 +45,11 @@ export default function SignupPage() {
             const { error } = await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    data: {
+                        full_name: name.trim(),
+                    },
+                },
             });
 
             if (error) {
@@ -71,6 +82,19 @@ export default function SignupPage() {
 
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-100/50 p-8">
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="name">Full Name</Label>
+                                <Input
+                                    id="name"
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Your full name"
+                                    required
+                                    autoComplete="name"
+                                />
+                            </div>
+
                             <div className="space-y-1.5">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
