@@ -74,7 +74,6 @@ export const en: TranslationStrings = {
     'action.close': 'Close',
     'action.confirm': 'Confirm',
     'action.addChild': 'Add Child',
-    'action.addParent': 'Add Parent',
     'action.addSpouse': 'Add Spouse',
     'action.addPerson': 'Add Person',
     'action.editPerson': 'Edit Person',
@@ -90,6 +89,8 @@ export const en: TranslationStrings = {
     'union.selectSpouse': 'Select which spouse this child belongs to',
     'union.marriageDate': 'Marriage Date',
     'union.noSpouse': 'No spouse (single parent)',
+    'union.spouseChildrenQuestion': 'Which existing children also belong to this spouse?',
+    'union.none': 'None',
 
     // Search
     'search.title': 'Search Family Tree',

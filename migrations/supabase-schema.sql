@@ -140,13 +140,15 @@ BEGIN
     new_data := to_jsonb(NEW);
     record_id := NEW.id;
   ELSIF TG_OP = 'UPDATE' THEN
-    -- Check if this is a soft delete
-    IF TG_TABLE_NAME = 'persons' AND OLD.deleted = false AND NEW.deleted = true THEN
-      action_type := 'delete';
-    ELSIF TG_TABLE_NAME = 'persons' AND OLD.deleted = true AND NEW.deleted = false THEN
-      action_type := 'restore';
-    ELSE
-      action_type := 'update';
+    action_type := 'update';
+    -- Only "persons" has a "deleted" column; guard the field access so
+    -- updates on other audited tables (unions, union_children) don't fail.
+    IF TG_TABLE_NAME = 'persons' THEN
+      IF OLD.deleted = false AND NEW.deleted = true THEN
+        action_type := 'delete';
+      ELSIF OLD.deleted = true AND NEW.deleted = false THEN
+        action_type := 'restore';
+      END IF;
     END IF;
     old_data := to_jsonb(OLD);
     new_data := to_jsonb(NEW);
@@ -245,10 +247,12 @@ ALTER TABLE app_config ENABLE ROW LEVEL SECURITY;
 -- Public read policies keep the tree viewable without an account.
 -- Write policies below remain restricted to authenticated editors/admins.
 -- PERSONS policies
+-- Editors/admins can also see soft-deleted rows; without this, soft deletes
+-- fail under RLS because the updated row becomes invisible to the updater.
 CREATE POLICY "Anyone can view non-deleted persons"
   ON persons FOR SELECT
   TO anon, authenticated
-  USING (deleted = false);
+  USING (deleted = false OR can_edit(auth.uid()));
 
 CREATE POLICY "Editors and admins can insert persons"
   ON persons FOR INSERT

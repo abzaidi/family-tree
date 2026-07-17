@@ -21,10 +21,10 @@ import {
 } from '@/components/ui/select';
 import { useI18n } from '@/lib/i18n/context';
 import { useTreeStore } from '@/store/tree-store';
-import type { Gender, Person, PersonFormData, Union } from '@/types';
+import type { Gender, Person, PersonFormData } from '@/types';
 import { toast } from 'sonner';
 
-type AddMode = 'child' | 'spouse' | 'parent' | 'root';
+type AddMode = 'child' | 'spouse' | 'root';
 
 interface AddPersonModalProps {
     open: boolean;
@@ -34,7 +34,8 @@ interface AddPersonModalProps {
     onSubmit: (
         data: PersonFormData,
         mode: AddMode,
-        selectedUnionId?: string
+        selectedUnionId?: string,
+        selectedChildIds?: string[]
     ) => Promise<void>;
 }
 
@@ -46,7 +47,7 @@ export function AddPersonModal({
     onSubmit,
 }: AddPersonModalProps) {
     const { t, getPersonName } = useI18n();
-    const { unions, persons } = useTreeStore();
+    const { unions, unionChildren, persons } = useTreeStore();
 
     const [formData, setFormData] = useState<PersonFormData>({
         english_name: '',
@@ -57,6 +58,7 @@ export function AddPersonModal({
         notes: '',
     });
     const [selectedUnionId, setSelectedUnionId] = useState<string>('');
+    const [selectedChildIds, setSelectedChildIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Get unions for the target person (needed for "Add Child" flow)
@@ -69,6 +71,27 @@ export function AddPersonModal({
             )
             : [];
 
+    // Only children in this person's single-parent unions can be assigned to a
+    // newly added spouse. Children already belonging to a couple are excluded.
+    const singleParentUnionIds = new Set(
+        targetPerson && mode === 'spouse'
+            ? unions
+                .filter(
+                    (union) =>
+                        union.partner1_id === targetPerson.id &&
+                        union.partner2_id === null
+                )
+                .map((union) => union.id)
+            : []
+    );
+    const eligibleChildren =
+        mode === 'spouse'
+            ? unionChildren
+                .filter((link) => singleParentUnionIds.has(link.union_id))
+                .map((link) => persons.find((person) => person.id === link.child_id))
+                .filter((person): person is Person => Boolean(person && !person.deleted))
+            : [];
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.english_name && !formData.urdu_name) {
@@ -77,7 +100,12 @@ export function AddPersonModal({
         }
         setLoading(true);
         try {
-            await onSubmit(formData, mode, selectedUnionId || undefined);
+            await onSubmit(
+                formData,
+                mode,
+                selectedUnionId || undefined,
+                selectedChildIds
+            );
             setFormData({
                 english_name: '',
                 urdu_name: '',
@@ -87,6 +115,7 @@ export function AddPersonModal({
                 notes: '',
             });
             setSelectedUnionId('');
+            setSelectedChildIds([]);
             onClose();
         } catch {
             toast.error(t('toast.error'));
@@ -98,7 +127,6 @@ export function AddPersonModal({
     const titleMap: Record<AddMode, string> = {
         child: 'action.addChild',
         spouse: 'action.addSpouse',
-        parent: 'action.addParent',
         root: 'action.addRoot',
     };
 
@@ -222,6 +250,53 @@ export function AddPersonModal({
                                     })}
                                 </SelectContent>
                             </Select>
+                        </div>
+                    )}
+
+                    {mode === 'spouse' && eligibleChildren.length > 0 && (
+                        <div className="space-y-2">
+                            <Label>{t('union.spouseChildrenQuestion')}</Label>
+                            <div className="grid gap-2 rounded-lg border border-border p-2">
+                                <button
+                                    type="button"
+                                    aria-pressed={selectedChildIds.length === 0}
+                                    onClick={() => setSelectedChildIds([])}
+                                    className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                                        selectedChildIds.length === 0
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'hover:bg-accent'
+                                    }`}
+                                >
+                                    {t('union.none')}
+                                </button>
+                                {eligibleChildren.map((child) => {
+                                    const selected = selectedChildIds.includes(child.id);
+                                    return (
+                                        <button
+                                            key={child.id}
+                                            type="button"
+                                            aria-pressed={selected}
+                                            onClick={() =>
+                                                setSelectedChildIds((current) =>
+                                                    selected
+                                                        ? current.filter((id) => id !== child.id)
+                                                        : [...current, child.id]
+                                                )
+                                            }
+                                            className={`rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                                                selected
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'hover:bg-accent'
+                                            }`}
+                                        >
+                                            {getPersonName(
+                                                child.english_name,
+                                                child.urdu_name
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
 

@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTreeStore } from '@/store/tree-store';
 import type { Union, UnionChild } from '@/types';
 import { toast } from 'sonner';
 
 export function useUnions() {
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
     const createUnion = useCallback(
         async (partner1Id: string, partner2Id: string | null, marriageDate?: string): Promise<Union | null> => {
@@ -28,7 +28,7 @@ export function useUnions() {
             useTreeStore.getState().addUnion(union);
             return union;
         },
-        []
+        [supabase]
     );
 
     const addChildToUnion = useCallback(
@@ -46,7 +46,103 @@ export function useUnions() {
             useTreeStore.getState().addUnionChild(uc);
             return uc;
         },
-        []
+        [supabase]
+    );
+
+    const createSpouseUnion = useCallback(
+        async (
+            personId: string,
+            spouseId: string,
+            childIds: string[]
+        ): Promise<Union | null> => {
+            const state = useTreeStore.getState();
+            const selectedIds = [...new Set(childIds)];
+            const selectedLinks = state.unionChildren.filter((link) =>
+                selectedIds.includes(link.child_id)
+            );
+            const sourceUnionIds = new Set(
+                selectedLinks.map((link) => link.union_id)
+            );
+            const sourceUnions = state.unions.filter((union) =>
+                sourceUnionIds.has(union.id)
+            );
+
+            const selectionsAreValid =
+                selectedLinks.length === selectedIds.length &&
+                sourceUnions.every(
+                    (union) =>
+                        union.partner1_id === personId &&
+                        union.partner2_id === null
+                );
+
+            if (!selectionsAreValid) {
+                toast.error('Some selected children are no longer eligible');
+                return null;
+            }
+
+            // If every child in one single-parent union was selected, turn that
+            // existing union into the couple. This avoids leaving an empty union.
+            if (sourceUnions.length === 1) {
+                const sourceUnion = sourceUnions[0];
+                const sourceChildIds = state.unionChildren
+                    .filter((link) => link.union_id === sourceUnion.id)
+                    .map((link) => link.child_id);
+                const selectedSet = new Set(selectedIds);
+                const allSourceChildrenSelected =
+                    sourceChildIds.length === selectedIds.length &&
+                    sourceChildIds.every((id) => selectedSet.has(id));
+
+                if (allSourceChildrenSelected) {
+                    const { data: updatedUnion, error } = await supabase
+                        .from('unions')
+                        .update({ partner2_id: spouseId })
+                        .eq('id', sourceUnion.id)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        toast.error(error.message);
+                        return null;
+                    }
+
+                    useTreeStore.getState().updateUnion(updatedUnion);
+                    return updatedUnion;
+                }
+            }
+
+            const { data: newUnion, error: unionError } = await supabase
+                .from('unions')
+                .insert({
+                    partner1_id: personId,
+                    partner2_id: spouseId,
+                    marriage_date: null,
+                })
+                .select()
+                .single();
+
+            if (unionError) {
+                toast.error(unionError.message);
+                return null;
+            }
+
+            if (selectedIds.length > 0) {
+                const { error: moveError } = await supabase
+                    .from('union_children')
+                    .update({ union_id: newUnion.id })
+                    .in('child_id', selectedIds);
+
+                if (moveError) {
+                    toast.error(moveError.message);
+                    return null;
+                }
+            }
+
+            const latestState = useTreeStore.getState();
+            latestState.addUnion(newUnion);
+            latestState.moveUnionChildren(selectedIds, newUnion.id);
+            return newUnion;
+        },
+        [supabase]
     );
 
     const findUnionBetween = useCallback(
@@ -91,6 +187,7 @@ export function useUnions() {
 
     return {
         createUnion,
+        createSpouseUnion,
         addChildToUnion,
         findUnionBetween,
         getUnionsForPerson,

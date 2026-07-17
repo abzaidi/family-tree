@@ -29,7 +29,6 @@ interface PersonDrawerProps {
     onDelete: (person: Person) => void;
     onAddChild: (person: Person) => void;
     onAddSpouse: (person: Person) => void;
-    onAddParent: (person: Person) => void;
 }
 
 export function PersonDrawer({
@@ -37,7 +36,6 @@ export function PersonDrawer({
     onDelete,
     onAddChild,
     onAddSpouse,
-    onAddParent,
 }: PersonDrawerProps) {
     const { selectedPersonId, isDrawerOpen, setDrawerOpen, persons, unions, unionChildren } =
         useTreeStore();
@@ -316,15 +314,6 @@ export function PersonDrawer({
                                 >
                                     <Heart className="w-3.5 h-3.5 mr-1.5" />
                                     {t('action.addSpouse')}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs"
-                                    onClick={() => onAddParent(person)}
-                                >
-                                    <Users className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('action.addParent')}
                                 </Button>
                                 <Button
                                     variant="outline"

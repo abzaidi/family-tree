@@ -27,7 +27,9 @@ interface TreeState {
 
     // Union CRUD helpers
     addUnion: (union: Union) => void;
+    updateUnion: (union: Union) => void;
     addUnionChild: (uc: UnionChild) => void;
+    moveUnionChildren: (childIds: string[], unionId: string) => void;
 
     // UI actions
     selectPerson: (id: string | null) => void;
@@ -71,8 +73,25 @@ export const useTreeStore = create<TreeState>((set, get) => ({
 
     addUnion: (union) =>
         set((state) => ({ unions: [...state.unions, union] })),
+    updateUnion: (union) =>
+        set((state) => ({
+            unions: state.unions.map((item) =>
+                item.id === union.id ? union : item
+            ),
+        })),
     addUnionChild: (uc) =>
         set((state) => ({ unionChildren: [...state.unionChildren, uc] })),
+    moveUnionChildren: (childIds, unionId) =>
+        set((state) => {
+            const selected = new Set(childIds);
+            return {
+                unionChildren: state.unionChildren.map((item) =>
+                    selected.has(item.child_id)
+                        ? { ...item, union_id: unionId }
+                        : item
+                ),
+            };
+        }),
 
     selectPerson: (id) => set({ selectedPersonId: id, isDrawerOpen: id !== null }),
     toggleNode: (id) =>

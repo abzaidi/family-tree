@@ -74,7 +74,6 @@ export const ur: TranslationStrings = {
     'action.close': 'بند کریں',
     'action.confirm': 'تصدیق',
     'action.addChild': 'بچہ شامل کریں',
-    'action.addParent': 'والدین شامل کریں',
     'action.addSpouse': 'شریکِ حیات شامل کریں',
     'action.addPerson': 'فرد شامل کریں',
     'action.editPerson': 'فرد میں ترمیم',
@@ -90,6 +89,8 @@ export const ur: TranslationStrings = {
     'union.selectSpouse': 'منتخب کریں کہ یہ بچہ کس شریکِ حیات سے ہے',
     'union.marriageDate': 'تاریخِ نکاح',
     'union.noSpouse': 'بغیر شریکِ حیات',
+    'union.spouseChildrenQuestion': 'موجودہ بچوں میں سے کون اس شریکِ حیات کی بھی اولاد ہے؟',
+    'union.none': 'کوئی نہیں',
 
     // Search
     'search.title': 'خاندانی شجرے میں تلاش کریں',

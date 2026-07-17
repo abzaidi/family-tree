@@ -28,6 +28,11 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
 6. Existing projects should run `migrations/supabase-user-names.sql` once to add names
    to the admin user list and backfill the initial account. New signups store their
    full name in Supabase Auth metadata automatically.
+7. Existing projects should also run `migrations/supabase-fix-audit-update.sql` once,
+   which fixes the audit trigger so updates to unions (e.g. linking a spouse to
+   existing children) don't fail.
+8. Existing projects should also run `migrations/supabase-fix-soft-delete.sql` once,
+   which fixes the persons SELECT policy so editors can soft-delete nodes.
 
 ### 2. Environment Configuration
 1. Rename/copy `.env.local.example` to `.env.local`:
