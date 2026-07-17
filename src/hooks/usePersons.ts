@@ -1,15 +1,13 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTreeStore } from '@/store/tree-store';
 import type { Person, PersonFormData } from '@/types';
 import { toast } from 'sonner';
 
 export function usePersons() {
-    const supabase = createClient();
-    const { setPersons, addPerson, updatePerson, removePerson, persons, unions, unionChildren } =
-        useTreeStore();
+    const supabase = useMemo(() => createClient(), []);
 
     const fetchAll = useCallback(async () => {
         const [personsRes, unionsRes, ucRes, configRes] = await Promise.all([
@@ -23,7 +21,7 @@ export function usePersons() {
         if (unionsRes.data) useTreeStore.getState().setUnions(unionsRes.data);
         if (ucRes.data) useTreeStore.getState().setUnionChildren(ucRes.data);
         if (configRes.data) useTreeStore.getState().setRootPersonId(configRes.data.value);
-    }, []);
+    }, [supabase]);
 
     const createPerson = useCallback(
         async (data: PersonFormData): Promise<Person | null> => {
@@ -44,10 +42,10 @@ export function usePersons() {
                 toast.error(error.message);
                 return null;
             }
-            addPerson(person);
+            useTreeStore.getState().addPerson(person);
             return person;
         },
-        []
+        [supabase]
     );
 
     const editPerson = useCallback(
@@ -63,10 +61,10 @@ export function usePersons() {
                 toast.error(error.message);
                 return false;
             }
-            updatePerson(person);
+            useTreeStore.getState().updatePerson(person);
             return true;
         },
-        []
+        [supabase]
     );
 
     const getDescendantCount = useCallback(
@@ -144,10 +142,38 @@ export function usePersons() {
                 return false;
             }
 
-            toDelete.forEach((id) => removePerson(id));
+            toDelete.forEach((id) => useTreeStore.getState().removePerson(id));
             return true;
         },
-        []
+        [supabase]
+    );
+
+    const insertPersonInMiddle = useCallback(
+        async (
+            data: PersonFormData,
+            parentId: string,
+            childId: string
+        ): Promise<boolean> => {
+            const { error } = await supabase.rpc('insert_person_in_middle', {
+                selected_parent_id: parentId,
+                selected_child_id: childId,
+                new_english_name: data.english_name,
+                new_urdu_name: data.urdu_name,
+                new_gender: data.gender,
+                new_birth_year: data.birth_year,
+                new_death_year: data.death_year,
+                new_notes: data.notes || null,
+            });
+
+            if (error) {
+                toast.error(error.message);
+                return false;
+            }
+
+            await fetchAll();
+            return true;
+        },
+        [fetchAll, supabase]
     );
 
     const setRootPerson = useCallback(
@@ -163,8 +189,16 @@ export function usePersons() {
             useTreeStore.getState().setRootPersonId(personId);
             return true;
         },
-        []
+        [supabase]
     );
 
-    return { fetchAll, createPerson, editPerson, softDeleteBranch, getDescendantCount, setRootPerson };
+    return {
+        fetchAll,
+        createPerson,
+        editPerson,
+        softDeleteBranch,
+        insertPersonInMiddle,
+        getDescendantCount,
+        setRootPerson,
+    };
 }

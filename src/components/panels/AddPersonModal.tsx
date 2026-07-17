@@ -19,12 +19,86 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Command,
+    CommandEmpty,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import { ChevronDown } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/context';
 import { useTreeStore } from '@/store/tree-store';
 import type { Gender, Person, PersonFormData } from '@/types';
 import { toast } from 'sonner';
 
-type AddMode = 'child' | 'spouse' | 'root';
+type AddMode = 'child' | 'spouse' | 'root' | 'insert';
+
+interface PersonComboboxProps {
+    persons: Person[];
+    value: string;
+    onChange: (personId: string) => void;
+    placeholder: string;
+    searchPlaceholder: string;
+    noResultsText: string;
+    getPersonName: (englishName: string, urduName: string) => string;
+}
+
+function PersonCombobox({
+    persons,
+    value,
+    onChange,
+    placeholder,
+    searchPlaceholder,
+    noResultsText,
+    getPersonName,
+}: PersonComboboxProps) {
+    const [open, setOpen] = useState(false);
+    const selected = persons.find((person) => person.id === value);
+
+    return (
+        <div className="space-y-1.5">
+            <button
+                type="button"
+                onClick={() => setOpen((current) => !current)}
+                aria-expanded={open}
+                className="flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+                <span className={selected ? 'truncate' : 'truncate text-muted-foreground'}>
+                    {selected
+                        ? getPersonName(selected.english_name, selected.urdu_name)
+                        : placeholder}
+                </span>
+                <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+            </button>
+            {open && (
+                <div className="rounded-lg border border-border bg-popover shadow-md">
+                    <Command>
+                        <CommandInput placeholder={searchPlaceholder} autoFocus />
+                        <CommandList className="max-h-40">
+                            <CommandEmpty>{noResultsText}</CommandEmpty>
+                            {persons.map((person) => (
+                                <CommandItem
+                                    key={person.id}
+                                    // Name + id keeps duplicate names distinct while
+                                    // still matching typed name text
+                                    value={`${person.english_name} ${person.urdu_name} ${person.id}`}
+                                    data-checked={person.id === value}
+                                    onSelect={() => {
+                                        onChange(person.id);
+                                        setOpen(false);
+                                    }}
+                                >
+                                    {getPersonName(person.english_name, person.urdu_name)}
+                                </CommandItem>
+                            ))}
+                        </CommandList>
+                    </Command>
+                </div>
+            )}
+        </div>
+    );
+}
 
 interface AddPersonModalProps {
     open: boolean;
@@ -35,8 +109,10 @@ interface AddPersonModalProps {
         data: PersonFormData,
         mode: AddMode,
         selectedUnionId?: string,
-        selectedChildIds?: string[]
-    ) => Promise<void>;
+        selectedChildIds?: string[],
+        selectedParentId?: string,
+        selectedDirectChildId?: string
+    ) => Promise<boolean>;
 }
 
 export function AddPersonModal({
@@ -59,6 +135,8 @@ export function AddPersonModal({
     });
     const [selectedUnionId, setSelectedUnionId] = useState<string>('');
     const [selectedChildIds, setSelectedChildIds] = useState<string[]>([]);
+    const [selectedParentId, setSelectedParentId] = useState('');
+    const [selectedDirectChildId, setSelectedDirectChildId] = useState('');
     const [loading, setLoading] = useState(false);
 
     // Get unions for the target person (needed for "Add Child" flow)
@@ -92,20 +170,60 @@ export function AddPersonModal({
                 .filter((person): person is Person => Boolean(person && !person.deleted))
             : [];
 
+    const activePersons = persons.filter((person) => !person.deleted);
+    const selectedChildLink = unionChildren.find(
+        (link) => link.child_id === selectedDirectChildId
+    );
+    const selectedChildParentUnion = selectedChildLink
+        ? unions.find((union) => union.id === selectedChildLink.union_id)
+        : undefined;
+    const isDirectRelationship = Boolean(
+        selectedParentId &&
+        selectedDirectChildId &&
+        selectedChildParentUnion &&
+        (
+            selectedChildParentUnion.partner1_id === selectedParentId ||
+            selectedChildParentUnion.partner2_id === selectedParentId
+        )
+    );
+    const insertValidationError =
+        mode !== 'insert' || !selectedParentId || !selectedDirectChildId
+            ? null
+            : selectedParentId === selectedDirectChildId
+                ? t('insert.samePersonError')
+                : !isDirectRelationship
+                    ? t('insert.notDirectError')
+                    : null;
+    const insertSelectionValid =
+        mode !== 'insert' ||
+        Boolean(
+            selectedParentId &&
+            selectedDirectChildId &&
+            selectedParentId !== selectedDirectChildId &&
+            isDirectRelationship
+        );
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.english_name && !formData.urdu_name) {
             toast.error('At least one name is required');
             return;
         }
+        if (!insertSelectionValid) {
+            toast.error(insertValidationError || t('insert.selectionRequired'));
+            return;
+        }
         setLoading(true);
         try {
-            await onSubmit(
+            const success = await onSubmit(
                 formData,
                 mode,
                 selectedUnionId || undefined,
-                selectedChildIds
+                selectedChildIds,
+                selectedParentId || undefined,
+                selectedDirectChildId || undefined
             );
+            if (!success) return;
             setFormData({
                 english_name: '',
                 urdu_name: '',
@@ -116,6 +234,8 @@ export function AddPersonModal({
             });
             setSelectedUnionId('');
             setSelectedChildIds([]);
+            setSelectedParentId('');
+            setSelectedDirectChildId('');
             onClose();
         } catch {
             toast.error(t('toast.error'));
@@ -124,10 +244,28 @@ export function AddPersonModal({
         }
     };
 
+    // Base UI's Select renders the raw value (a UUID) unless display text is
+    // provided explicitly, so resolve union labels for the trigger ourselves
+    const unionLabel = (unionId: string): string => {
+        const union = targetUnions.find((u) => u.id === unionId);
+        if (!union) return '';
+        const spouseId =
+            union.partner1_id === targetPerson?.id
+                ? union.partner2_id
+                : union.partner1_id;
+        const spouse = spouseId
+            ? persons.find((p) => p.id === spouseId)
+            : null;
+        return spouse
+            ? getPersonName(spouse.english_name, spouse.urdu_name)
+            : t('union.noSpouse');
+    };
+
     const titleMap: Record<AddMode, string> = {
         child: 'action.addChild',
         spouse: 'action.addSpouse',
         root: 'action.addRoot',
+        insert: 'action.insertMiddle',
     };
 
     return (
@@ -165,6 +303,46 @@ export function AddPersonModal({
                         </div>
                     </div>
 
+                    {mode === 'insert' && (
+                        <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-3">
+                            <p className="text-sm text-muted-foreground">
+                                {t('insert.description')}
+                            </p>
+
+                            <div className="space-y-1.5">
+                                <Label>{t('insert.selectParent')}</Label>
+                                <PersonCombobox
+                                    persons={activePersons}
+                                    value={selectedParentId}
+                                    onChange={setSelectedParentId}
+                                    placeholder={t('insert.selectParent')}
+                                    searchPlaceholder={t('search.placeholder')}
+                                    noResultsText={t('search.noResults')}
+                                    getPersonName={getPersonName}
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label>{t('insert.selectChild')}</Label>
+                                <PersonCombobox
+                                    persons={activePersons}
+                                    value={selectedDirectChildId}
+                                    onChange={setSelectedDirectChildId}
+                                    placeholder={t('insert.selectChild')}
+                                    searchPlaceholder={t('search.placeholder')}
+                                    noResultsText={t('search.noResults')}
+                                    getPersonName={getPersonName}
+                                />
+                            </div>
+
+                            {insertValidationError && (
+                                <p className="text-sm text-destructive">
+                                    {insertValidationError}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="space-y-1.5">
                         <Label>{t('person.gender')}</Label>
                         <Select
@@ -174,7 +352,9 @@ export function AddPersonModal({
                             }
                         >
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue>
+                                    {t(`person.${formData.gender}`)}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="male">{t('person.male')}</SelectItem>
@@ -226,7 +406,11 @@ export function AddPersonModal({
                                 onValueChange={(v) => setSelectedUnionId(v || '')}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder={t('union.selectSpouse')} />
+                                    <SelectValue placeholder={t('union.selectSpouse')}>
+                                        {selectedUnionId
+                                            ? unionLabel(selectedUnionId)
+                                            : t('union.selectSpouse')}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {targetUnions.map((u) => {
@@ -317,7 +501,10 @@ export function AddPersonModal({
                         <Button type="button" variant="outline" onClick={onClose}>
                             {t('action.cancel')}
                         </Button>
-                        <Button type="submit" disabled={loading}>
+                        <Button
+                            type="submit"
+                            disabled={loading || !insertSelectionValid}
+                        >
                             {loading ? t('state.loading') : t('action.save')}
                         </Button>
                     </DialogFooter>

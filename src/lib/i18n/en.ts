@@ -75,6 +75,7 @@ export const en: TranslationStrings = {
     'action.confirm': 'Confirm',
     'action.addChild': 'Add Child',
     'action.addSpouse': 'Add Spouse',
+    'action.insertMiddle': 'Insert Person in Middle',
     'action.addPerson': 'Add Person',
     'action.editPerson': 'Edit Person',
     'action.addRoot': 'Add Root Person',
@@ -91,6 +92,14 @@ export const en: TranslationStrings = {
     'union.noSpouse': 'No spouse (single parent)',
     'union.spouseChildrenQuestion': 'Which existing children also belong to this spouse?',
     'union.none': 'None',
+
+    // Insert generation
+    'insert.description': 'Choose an existing direct parent and child. The new person will be inserted between them.',
+    'insert.selectParent': 'Select Parent',
+    'insert.selectChild': 'Select Child',
+    'insert.samePersonError': 'The parent and child cannot be the same person.',
+    'insert.notDirectError': 'The selected child must currently be a direct child of the selected parent.',
+    'insert.selectionRequired': 'Select a valid direct parent and child.',
 
     // Search
     'search.title': 'Search Family Tree',

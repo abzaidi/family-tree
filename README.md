@@ -33,6 +33,8 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
    existing children) don't fail.
 8. Existing projects should also run `migrations/supabase-fix-soft-delete.sql` once,
    which fixes the persons SELECT policy so editors can soft-delete nodes.
+9. Run `migrations/supabase-insert-person-middle.sql` once to enable the atomic
+   missing-generation insertion feature.
 
 ### 2. Environment Configuration
 1. Rename/copy `.env.local.example` to `.env.local`:

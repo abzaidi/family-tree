@@ -32,14 +32,14 @@ const FamilyCanvas = dynamic(
 function TreeApp() {
   const { t } = useI18n();
   const { loading: authLoading, canEdit } = useAuth();
-  const { fetchAll, createPerson, editPerson, softDeleteBranch, getDescendantCount, setRootPerson } =
+  const { fetchAll, createPerson, editPerson, softDeleteBranch, insertPersonInMiddle, getDescendantCount, setRootPerson } =
     usePersons();
   const { createUnion, createSpouseUnion, addChildToUnion, getUnionsForPerson } = useUnions();
   const { persons, rootPersonId, expandNode } = useTreeStore();
 
   // Modal state
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [addMode, setAddMode] = useState<'child' | 'spouse' | 'root'>('root');
+  const [addMode, setAddMode] = useState<'child' | 'spouse' | 'root' | 'insert'>('root');
   const [targetPerson, setTargetPerson] = useState<Person | null>(null);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -80,6 +80,12 @@ function TreeApp() {
     setAddModalOpen(true);
   }, []);
 
+  const handleInsertPerson = useCallback(() => {
+    setTargetPerson(null);
+    setAddMode('insert');
+    setAddModalOpen(true);
+  }, []);
+
   const handleEdit = useCallback((person: Person) => {
     setEditTarget(person);
     setEditModalOpen(true);
@@ -98,21 +104,37 @@ function TreeApp() {
   const handleAddSubmit = useCallback(
     async (
       data: PersonFormData,
-      mode: 'child' | 'spouse' | 'root',
+      mode: 'child' | 'spouse' | 'root' | 'insert',
       selectedUnionId?: string,
-      selectedChildIds: string[] = []
+      selectedChildIds: string[] = [],
+      selectedParentId?: string,
+      selectedDirectChildId?: string
     ) => {
-      const newPerson = await createPerson(data);
-      if (!newPerson) return;
-
-      if (mode === 'root') {
-        await setRootPerson(newPerson.id);
-        expandNode(newPerson.id);
+      if (mode === 'insert') {
+        if (!selectedParentId || !selectedDirectChildId) return false;
+        const success = await insertPersonInMiddle(
+          data,
+          selectedParentId,
+          selectedDirectChildId
+        );
+        if (!success) return false;
+        expandNode(selectedParentId);
         toast.success(t('toast.added'));
-        return;
+        return true;
       }
 
-      if (!targetPerson) return;
+      const newPerson = await createPerson(data);
+      if (!newPerson) return false;
+
+      if (mode === 'root') {
+        const success = await setRootPerson(newPerson.id);
+        if (!success) return false;
+        expandNode(newPerson.id);
+        toast.success(t('toast.added'));
+        return true;
+      }
+
+      if (!targetPerson) return false;
 
       if (mode === 'child') {
         let unionId = selectedUnionId;
@@ -123,11 +145,12 @@ function TreeApp() {
             unionId = unions[0].id;
           } else {
             const union = await createUnion(targetPerson.id, null);
-            if (!union) return;
+            if (!union) return false;
             unionId = union.id;
           }
         }
-        await addChildToUnion(unionId, newPerson.id);
+        const link = await addChildToUnion(unionId, newPerson.id);
+        if (!link) return false;
         expandNode(targetPerson.id);
       } else if (mode === 'spouse') {
         const union = await createSpouseUnion(
@@ -135,14 +158,16 @@ function TreeApp() {
           newPerson.id,
           selectedChildIds
         );
-        if (!union) return;
+        if (!union) return false;
         expandNode(targetPerson.id);
       }
 
       toast.success(t('toast.added'));
+      return true;
     },
     [
       createPerson,
+      insertPersonInMiddle,
       setRootPerson,
       targetPerson,
       createUnion,
@@ -191,7 +216,7 @@ function TreeApp() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <Navbar />
+      <Navbar onInsertPerson={handleInsertPerson} canEdit={canEdit} />
 
       <main className="flex-1 relative mt-14">
         {hasRoot ? (

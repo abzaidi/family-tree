@@ -125,7 +125,9 @@ export function EditPersonModal({
                             }
                         >
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue>
+                                    {t(`person.${formData.gender}`)}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="male">{t('person.male')}</SelectItem>

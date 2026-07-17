@@ -7,6 +7,7 @@ import {
     ChevronsDownUp,
     ChevronsUpDown,
     TreePine,
+    UserRoundPlus,
 } from 'lucide-react';
 import { LanguageSwitch } from './LanguageSwitch';
 import { UserMenu } from './UserMenu';
@@ -14,7 +15,12 @@ import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 
-export function Navbar() {
+interface NavbarProps {
+    canEdit: boolean;
+    onInsertPerson: () => void;
+}
+
+export function Navbar({ canEdit, onInsertPerson }: NavbarProps) {
     const { setSearchOpen, expandAll, collapseAll } = useTreeStore();
     const { t } = useI18n();
 
@@ -56,6 +62,22 @@ export function Navbar() {
                     >
                         <Search className="w-4 h-4" />
                     </Button>
+
+                    {canEdit && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onInsertPerson}
+                            aria-label={t('action.insertMiddle')}
+                            title={t('action.insertMiddle')}
+                            className="gap-1.5"
+                        >
+                            <UserRoundPlus className="w-4 h-4" />
+                            <span className="hidden xl:inline">
+                                {t('action.insertMiddle')}
+                            </span>
+                        </Button>
+                    )}
 
                     <Button
                         variant="ghost"

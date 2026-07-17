@@ -75,6 +75,7 @@ export const ur: TranslationStrings = {
     'action.confirm': 'تصدیق',
     'action.addChild': 'بچہ شامل کریں',
     'action.addSpouse': 'شریکِ حیات شامل کریں',
+    'action.insertMiddle': 'درمیان میں فرد شامل کریں',
     'action.addPerson': 'فرد شامل کریں',
     'action.editPerson': 'فرد میں ترمیم',
     'action.addRoot': 'بنیادی فرد شامل کریں',
@@ -91,6 +92,14 @@ export const ur: TranslationStrings = {
     'union.noSpouse': 'بغیر شریکِ حیات',
     'union.spouseChildrenQuestion': 'موجودہ بچوں میں سے کون اس شریکِ حیات کی بھی اولاد ہے؟',
     'union.none': 'کوئی نہیں',
+
+    // Insert generation
+    'insert.description': 'موجودہ براہِ راست والدین اور بچے کو منتخب کریں۔ نیا فرد ان کے درمیان شامل ہو جائے گا۔',
+    'insert.selectParent': 'والدین منتخب کریں',
+    'insert.selectChild': 'بچہ منتخب کریں',
+    'insert.samePersonError': 'والدین اور بچہ ایک ہی فرد نہیں ہو سکتے۔',
+    'insert.notDirectError': 'منتخب بچہ اس وقت منتخب والدین کا براہِ راست بچہ ہونا چاہیے۔',
+    'insert.selectionRequired': 'درست براہِ راست والدین اور بچے کو منتخب کریں۔',
 
     // Search
     'search.title': 'خاندانی شجرے میں تلاش کریں',
