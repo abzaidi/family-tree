@@ -152,6 +152,23 @@ export const en: TranslationStrings = {
     'search.noCitiesAvailable': 'No cities in current data',
     'search.nationalIdPlaceholder': 'Enter ID number to search',
 
+    // Export
+    'export.action': 'Export',
+    'export.title': 'Export Family Tree',
+    'export.description':
+        'Download a PDF lineage document for {name} ({serial}).',
+    'export.descriptionFallback': 'Choose a language for the PDF export.',
+    'export.downloadEnglish': 'Download in English',
+    'export.downloadUrdu': 'Download in Urdu',
+    'export.documentTitle': '{name} Family Tree Record',
+    'export.continuedFrom': 'Continued from',
+    'export.success': 'PDF downloaded',
+    'export.errorMissingRoot':
+        'Export ancestor FT-000007 was not found in the tree.',
+    'export.errorNotDescendant':
+        'This person is not a descendant of FT-000007.',
+    'export.errorGeneric': 'Could not create the PDF export.',
+
     // Family statistics
     'stats.title': 'Family',
     'stats.total': 'Total',

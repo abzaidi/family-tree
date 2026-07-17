@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
     Sheet,
     SheetContent,
@@ -22,11 +23,16 @@ import {
     Phone,
     IdCard,
     Hash,
+    Download,
 } from 'lucide-react';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 import { useAuth } from '@/hooks/useAuth';
 import { formatSerialNumber } from '@/lib/person/format';
+import {
+    buildRelationshipIndex,
+    isExportEligible,
+} from '@/lib/tree/relationships';
 import type { Person } from '@/types';
 
 interface PersonDrawerProps {
@@ -34,6 +40,7 @@ interface PersonDrawerProps {
     onDelete: (person: Person) => void;
     onAddChild: (person: Person) => void;
     onAddSpouse: (person: Person) => void;
+    onExport: (person: Person) => void;
 }
 
 export function PersonDrawer({
@@ -41,6 +48,7 @@ export function PersonDrawer({
     onDelete,
     onAddChild,
     onAddSpouse,
+    onExport,
 }: PersonDrawerProps) {
     const { selectedPersonId, isDrawerOpen, setDrawerOpen, persons, unions, unionChildren } =
         useTreeStore();
@@ -48,6 +56,13 @@ export function PersonDrawer({
     const { canEdit } = useAuth();
 
     const person = persons.find((p) => p.id === selectedPersonId);
+
+    const canExport = useMemo(() => {
+        if (!person) return false;
+        const active = persons.filter((p) => !p.deleted);
+        const index = buildRelationshipIndex(active, unions, unionChildren);
+        return isExportEligible(index, person);
+    }, [person, persons, unions, unionChildren]);
 
     if (!person) return null;
 
@@ -356,46 +371,61 @@ export function PersonDrawer({
                     </ScrollArea>
 
                     {/* Actions */}
-                    {canEdit && (
+                    {(canExport || canEdit) && (
                         <div className="border-t border-border px-6 py-4 space-y-2">
-                            <div className="grid grid-cols-2 gap-2">
+                            {canExport && (
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-xs"
-                                    onClick={() => onAddChild(person)}
+                                    className="w-full text-xs"
+                                    onClick={() => onExport(person)}
                                 >
-                                    <UserPlus className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('action.addChild')}
+                                    <Download className="w-3.5 h-3.5 mr-1.5" />
+                                    {t('export.action')}
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs"
-                                    onClick={() => onAddSpouse(person)}
-                                >
-                                    <Heart className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('action.addSpouse')}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs"
-                                    onClick={() => onEdit(person)}
-                                >
-                                    <Edit className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('action.edit')}
-                                </Button>
-                            </div>
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                className="w-full text-xs"
-                                onClick={() => onDelete(person)}
-                            >
-                                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                                {t('action.delete')}
-                            </Button>
+                            )}
+                            {canEdit && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-xs"
+                                            onClick={() => onAddChild(person)}
+                                        >
+                                            <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                                            {t('action.addChild')}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-xs"
+                                            onClick={() => onAddSpouse(person)}
+                                        >
+                                            <Heart className="w-3.5 h-3.5 mr-1.5" />
+                                            {t('action.addSpouse')}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-xs"
+                                            onClick={() => onEdit(person)}
+                                        >
+                                            <Edit className="w-3.5 h-3.5 mr-1.5" />
+                                            {t('action.edit')}
+                                        </Button>
+                                    </div>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className="w-full text-xs"
+                                        onClick={() => onDelete(person)}
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                                        {t('action.delete')}
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

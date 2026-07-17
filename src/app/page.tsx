@@ -19,6 +19,7 @@ import {
   DeleteConfirmDialog,
   type DeleteChoice,
 } from '@/components/panels/DeleteConfirmDialog';
+import { ExportLanguageDialog } from '@/components/panels/ExportLanguageDialog';
 import { ThemeToaster } from '@/components/theme/theme-toaster';
 import { usePersons } from '@/hooks/usePersons';
 import { useUnions } from '@/hooks/useUnions';
@@ -59,6 +60,9 @@ function TreeApp() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Person | null>(null);
   const [deleteContext, setDeleteContext] = useState<DeleteContext | null>(null);
+
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportTarget, setExportTarget] = useState<Person | null>(null);
 
   // Data-loading state prevents the empty "add root" screen from flashing
   // before the tree data arrives
@@ -298,6 +302,10 @@ function TreeApp() {
         onDelete={handleDelete}
         onAddChild={handleAddChild}
         onAddSpouse={handleAddSpouse}
+        onExport={(person) => {
+          setExportTarget(person);
+          setExportModalOpen(true);
+        }}
       />
       <SearchCommand />
       <AddPersonModal
@@ -323,6 +331,14 @@ function TreeApp() {
         person={deleteTarget}
         deleteContext={deleteContext}
         onConfirm={handleDeleteConfirm}
+      />
+      <ExportLanguageDialog
+        open={exportModalOpen}
+        person={exportTarget}
+        onClose={() => {
+          setExportModalOpen(false);
+          setExportTarget(null);
+        }}
       />
     </div>
   );

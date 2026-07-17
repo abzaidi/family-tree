@@ -152,6 +152,23 @@ export const ur: TranslationStrings = {
     'search.noCitiesAvailable': 'موجودہ ڈیٹا میں کوئی شہر نہیں',
     'search.nationalIdPlaceholder': 'تلاش کے لیے شناختی نمبر درج کریں',
 
+    // Export
+    'export.action': 'برآمد',
+    'export.title': 'خاندانی شجرہ برآمد کریں',
+    'export.description':
+        '{name} ({serial}) کے لیے پی ڈی ایف شجرہ دستاویز ڈاؤن لوڈ کریں۔',
+    'export.descriptionFallback': 'پی ڈی ایف برآمد کے لیے زبان منتخب کریں۔',
+    'export.downloadEnglish': 'انگریزی میں ڈاؤن لوڈ کریں',
+    'export.downloadUrdu': 'اردو میں ڈاؤن لوڈ کریں',
+    'export.documentTitle': '{name} خاندانی شجرہ ریکارڈ',
+    'export.continuedFrom': 'جاری از',
+    'export.success': 'پی ڈی ایف ڈاؤن لوڈ ہو گئی',
+    'export.errorMissingRoot':
+        'برآمد کا آباؤ اجداد FT-000007 شجرے میں نہیں ملا۔',
+    'export.errorNotDescendant':
+        'یہ فرد FT-000007 کی اولاد نہیں ہے۔',
+    'export.errorGeneric': 'پی ڈی ایف برآمد نہیں ہو سکی۔',
+
     // Family statistics
     'stats.title': 'خاندان',
     'stats.total': 'کل',
