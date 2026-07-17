@@ -39,6 +39,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-tree-edge: var(--tree-edge);
+  --color-tree-dot: var(--tree-dot);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -81,6 +83,46 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.51 0.15 160);
+  --tree-edge: #94a3b8;
+  --tree-dot: #e2e8f0;
+  color-scheme: light;
+}
+
+.dark {
+  --background: oklch(0.16 0.01 160);
+  --foreground: oklch(0.97 0 0);
+  --card: oklch(0.21 0.012 160);
+  --card-foreground: oklch(0.97 0 0);
+  --popover: oklch(0.21 0.012 160);
+  --popover-foreground: oklch(0.97 0 0);
+  --primary: oklch(0.68 0.14 160);
+  --primary-foreground: oklch(0.16 0.02 160);
+  --secondary: oklch(0.27 0.015 160);
+  --secondary-foreground: oklch(0.97 0 0);
+  --muted: oklch(0.27 0.015 160);
+  --muted-foreground: oklch(0.72 0.02 160);
+  --accent: oklch(0.27 0.015 160);
+  --accent-foreground: oklch(0.97 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.68 0.14 160);
+  --chart-1: oklch(0.72 0.12 160);
+  --chart-2: oklch(0.65 0.1 200);
+  --chart-3: oklch(0.6 0.08 250);
+  --chart-4: oklch(0.7 0.12 80);
+  --chart-5: oklch(0.68 0.14 30);
+  --sidebar: oklch(0.19 0.012 160);
+  --sidebar-foreground: oklch(0.97 0 0);
+  --sidebar-primary: oklch(0.68 0.14 160);
+  --sidebar-primary-foreground: oklch(0.16 0.02 160);
+  --sidebar-accent: oklch(0.27 0.015 160);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.68 0.14 160);
+  --tree-edge: #94a3b8;
+  --tree-dot: #334155;
+  color-scheme: dark;
 }
 
 @layer base {
@@ -104,15 +146,29 @@
 .react-flow__controls {
   border-radius: 12px !important;
   overflow: hidden;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
 }
 
 .react-flow__controls-button {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
   border: none !important;
-  border-bottom: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid var(--border) !important;
+  fill: var(--foreground) !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--accent) !important;
 }
 
 .react-flow__controls-button:last-child {
   border-bottom: none !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
 }
 
 .react-flow__minimap {
@@ -139,10 +195,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--muted-foreground);
 }

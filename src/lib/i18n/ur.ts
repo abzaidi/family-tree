@@ -27,6 +27,12 @@ export const ur: TranslationStrings = {
     'nav.language': 'زبان',
     'nav.manageUsers': 'صارفین کا انتظام',
 
+    // Theme
+    'theme.label': 'تھیم',
+    'theme.light': 'روشن',
+    'theme.dark': 'تاریک',
+    'theme.system': 'سسٹم',
+
     // Admin
     'admin.usersTitle': 'صارفین کا انتظام',
     'admin.usersSubtitle': 'سائن اپ شدہ صارفین دیکھیں اور ان کی اجازتیں تبدیل کریں',

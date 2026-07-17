@@ -138,8 +138,8 @@ export function SearchCommand() {
                             <div className="flex items-center gap-3 w-full">
                                 <div
                                     className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${person.gender === 'female'
-                                            ? 'bg-pink-50 text-pink-500'
-                                            : 'bg-blue-50 text-blue-500'
+                                            ? 'bg-pink-50 text-pink-500 dark:bg-pink-950/60 dark:text-pink-300'
+                                            : 'bg-blue-50 text-blue-500 dark:bg-blue-950/60 dark:text-blue-300'
                                         }`}
                                 >
                                     {person.gender === 'female' ? (
@@ -153,7 +153,7 @@ export function SearchCommand() {
                                         {getPersonName(person.english_name, person.urdu_name)}
                                     </p>
                                     {person.birth_year && (
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-muted-foreground">
                                             {person.birth_year}
                                             {person.death_year ? ` — ${person.death_year}` : ''}
                                         </p>

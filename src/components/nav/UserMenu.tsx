@@ -23,7 +23,7 @@ export function UserMenu() {
         return (
             <Link
                 href="/login"
-                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
                 <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">{t('auth.login')}</span>
@@ -58,7 +58,7 @@ export function UserMenu() {
                     {fullName && (
                         <p className="text-sm font-medium truncate">{fullName}</p>
                     )}
-                    <p className={fullName ? 'text-xs text-gray-500 truncate' : 'text-sm font-medium truncate'}>
+                    <p className={fullName ? 'text-xs text-muted-foreground truncate' : 'text-sm font-medium truncate'}>
                         {user.email}
                     </p>
                     <Badge variant="secondary" className="mt-1 text-xs">
@@ -76,7 +76,7 @@ export function UserMenu() {
                         {t('nav.manageUsers')}
                     </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={signOut} className="text-red-600 cursor-pointer">
+                <DropdownMenuItem onClick={signOut} className="text-red-600 dark:text-red-400 cursor-pointer">
                     <LogOut className="w-4 h-4 mr-2" />
                     {t('auth.logout')}
                 </DropdownMenuItem>

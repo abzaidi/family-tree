@@ -9,7 +9,7 @@ const H_GAP = 80;
 const V_GAP = 140;
 const SPOUSE_GAP = 320;
 const COUPLE_WIDTH = SPOUSE_GAP + NODE_WIDTH;
-const EDGE_STYLE = { stroke: '#94a3b8', strokeWidth: 2 };
+const EDGE_STYLE = { stroke: 'var(--tree-edge)', strokeWidth: 2 };
 
 export interface LayoutResult {
     nodes: Node[];

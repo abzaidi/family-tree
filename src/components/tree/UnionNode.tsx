@@ -11,7 +11,7 @@ function UnionNodeComponent({ data }: NodeProps) {
             {/* Bridge the gap between incoming parent edges and the outgoing child edge */}
             <div className="relative w-6 h-6" aria-hidden="true">
                 {hasChildren && (
-                    <div className="absolute -top-1 -bottom-1 left-1/2 w-[2px] -translate-x-1/2 bg-[#94a3b8]" />
+                    <div className="absolute -top-1 -bottom-1 left-1/2 w-[2px] -translate-x-1/2 bg-tree-edge" />
                 )}
             </div>
             <Handle type="source" position={Position.Bottom} className="!w-2 !h-1 !bg-transparent !border-0 !min-h-0 !pointer-events-none" id="bottom" />

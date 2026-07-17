@@ -49,11 +49,11 @@ export function DeleteConfirmDialog({
             <DialogContent className="sm:max-w-[420px]">
                 <DialogHeader>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-red-600" />
+                        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/60 flex items-center justify-center">
+                            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                         </div>
                         <div>
-                            <DialogTitle className="text-red-700">
+                            <DialogTitle className="text-red-700 dark:text-red-400">
                                 {t('delete.title')}
                             </DialogTitle>
                         </div>
@@ -61,20 +61,20 @@ export function DeleteConfirmDialog({
                 </DialogHeader>
 
                 <div className="py-3 space-y-3">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                         {t('delete.confirm')}{' '}
-                        <strong>{getPersonName(person.english_name, person.urdu_name)}</strong>
+                        <strong className="text-foreground">{getPersonName(person.english_name, person.urdu_name)}</strong>
                     </p>
 
                     {descendantCount > 0 && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                            <p className="text-sm text-amber-800 font-medium">
+                        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                            <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
                                 ⚠️ {t('delete.descendants').replace('{count}', String(descendantCount))}
                             </p>
                         </div>
                     )}
 
-                    <p className="text-xs text-gray-400">{t('delete.warning')}</p>
+                    <p className="text-xs text-muted-foreground">{t('delete.warning')}</p>
                 </div>
 
                 <DialogFooter>

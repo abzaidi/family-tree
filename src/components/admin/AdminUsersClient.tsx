@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n/context';
 import { LanguageSwitch } from '@/components/nav/LanguageSwitch';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -94,37 +95,38 @@ export function AdminUsersClient({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" dir={dir}>
-      <header className="sticky top-0 z-20 border-b border-emerald-100/80 bg-white/90 backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-background to-teal-50 dark:from-emerald-950/30 dark:via-background dark:to-teal-950/20" dir={dir}>
+      <header className="sticky top-0 z-20 border-b border-border/80 bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-emerald-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">{t('admin.backToTree')}</span>
             </Link>
-            <div className="hidden h-5 w-px bg-emerald-100 sm:block" />
+            <div className="hidden h-5 w-px bg-border sm:block" />
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 text-white">
                 <Users className="h-4 w-4" />
               </div>
               <div>
-                <h1 className="text-sm font-semibold text-gray-900 sm:text-base">
+                <h1 className="text-sm font-semibold text-foreground sm:text-base">
                   {t('admin.usersTitle')}
                 </h1>
-                <p className="hidden text-xs text-gray-500 sm:block">
+                <p className="hidden text-xs text-muted-foreground sm:block">
                   {t('admin.usersSubtitle')}
                 </p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <LanguageSwitch />
             <Link
               href="/"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-emerald-700 dark:text-emerald-400 transition-colors hover:bg-accent"
             >
               <TreePine className="h-4 w-4" />
               <span className="hidden sm:inline">{t('app.title')}</span>
@@ -135,7 +137,7 @@ export function AdminUsersClient({
 
       <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {loading
               ? t('state.loading')
               : t('admin.userCount', { count: users.length })}
@@ -155,31 +157,31 @@ export function AdminUsersClient({
         </div>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">
             {error}
           </div>
         )}
 
-        <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           {loading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-20 text-gray-500">
-              <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+            <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-emerald-600 dark:text-emerald-400" />
               <p className="text-sm">{t('state.loading')}</p>
             </div>
           ) : users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 px-4 py-20 text-center text-gray-500">
+            <div className="flex flex-col items-center justify-center gap-2 px-4 py-20 text-center text-muted-foreground">
               <Users className="h-8 w-8 text-emerald-400" />
               <p className="text-sm font-medium">{t('admin.noUsers')}</p>
             </div>
           ) : (
             <>
-              <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.7fr)_minmax(0,1fr)_minmax(0,1.2fr)] gap-4 border-b border-emerald-50 bg-emerald-50/50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 md:grid">
+              <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.7fr)_minmax(0,1fr)_minmax(0,1.2fr)] gap-4 border-b border-border bg-muted/50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid">
                 <span>{t('admin.name')}</span>
                 <span>{t('admin.email')}</span>
                 <span>{t('admin.joined')}</span>
                 <span>{t('admin.role')}</span>
               </div>
-              <ul className="divide-y divide-emerald-50">
+              <ul className="divide-y divide-border">
                 {users.map((appUser) => {
                   const isCurrentUser = user?.id === appUser.id;
                   const isSaving = savingUserId === appUser.id;
@@ -191,7 +193,7 @@ export function AdminUsersClient({
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-medium text-gray-900">
+                          <p className="truncate text-sm font-medium text-foreground">
                             {appUser.name || t('admin.noName')}
                           </p>
                           {isCurrentUser && (
@@ -203,16 +205,16 @@ export function AdminUsersClient({
                       </div>
 
                       <div className="min-w-0">
-                        <p className="truncate text-sm text-gray-700">
+                        <p className="truncate text-sm text-foreground/80">
                           {appUser.email || t('admin.noEmail')}
                         </p>
-                        <p className="mt-0.5 truncate font-mono text-xs text-gray-400">
+                        <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
                           {appUser.id}
                         </p>
                       </div>
 
-                      <div className="text-sm text-gray-600">
-                        <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-gray-400 md:hidden">
+                      <div className="text-sm text-muted-foreground">
+                        <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:hidden">
                           {t('admin.joined')}
                         </span>
                         {formatDate(appUser.created_at)}
@@ -246,7 +248,7 @@ export function AdminUsersClient({
                           </SelectContent>
                         </Select>
                         {isSaving && (
-                          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-600" />
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
                     </li>

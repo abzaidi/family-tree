@@ -111,21 +111,21 @@ export function PersonDrawer({
 
     return (
         <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
-            <SheetContent className="w-[380px] sm:w-[420px] p-0 border-l border-gray-200">
+            <SheetContent className="w-[380px] sm:w-[420px] p-0 border-l border-border">
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div
                         className={`px-6 py-5 ${isFemale
-                                ? 'bg-gradient-to-r from-pink-50 to-rose-50'
-                                : 'bg-gradient-to-r from-blue-50 to-indigo-50'
+                                ? 'bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/50 dark:to-rose-950/40'
+                                : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/40'
                             }`}
                     >
                         <SheetHeader>
                             <div className="flex items-center gap-3">
                                 <div
                                     className={`w-12 h-12 rounded-full flex items-center justify-center ${isFemale
-                                            ? 'bg-pink-100 text-pink-600'
-                                            : 'bg-blue-100 text-blue-600'
+                                            ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/60 dark:text-pink-300'
+                                            : 'bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300'
                                         }`}
                                 >
                                     <User className="w-6 h-6" />
@@ -149,7 +149,7 @@ export function PersonDrawer({
                         <div className="py-4 space-y-5">
                             {/* Dates */}
                             {(person.birth_year || person.death_year) && (
-                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                     {person.birth_year && (
                                         <span className="flex items-center gap-1.5">
                                             <Calendar className="w-3.5 h-3.5" />
@@ -167,7 +167,7 @@ export function PersonDrawer({
 
                             {/* Alt name */}
                             {person.english_name && person.urdu_name && (
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-muted-foreground">
                                     {locale === 'ur'
                                         ? person.english_name
                                         : person.urdu_name && (
@@ -181,10 +181,10 @@ export function PersonDrawer({
                             {/* Notes */}
                             {person.notes && (
                                 <div>
-                                    <p className="text-xs font-medium text-gray-400 uppercase mb-1">
+                                    <p className="text-xs font-medium text-muted-foreground uppercase mb-1">
                                         {t('person.notes')}
                                     </p>
-                                    <p className="text-sm text-gray-600">{person.notes}</p>
+                                    <p className="text-sm text-foreground/80">{person.notes}</p>
                                 </div>
                             )}
 
@@ -192,7 +192,7 @@ export function PersonDrawer({
 
                             {/* Parents */}
                             <div>
-                                <p className="text-xs font-medium text-gray-400 uppercase mb-2 flex items-center gap-1.5">
+                                <p className="text-xs font-medium text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
                                     <Users className="w-3.5 h-3.5" />
                                     {t('person.parents')}
                                 </p>
@@ -201,7 +201,7 @@ export function PersonDrawer({
                                         {parents.map((p) => (
                                             <button
                                                 key={p.id}
-                                                className="block text-sm text-blue-600 hover:underline"
+                                                className="block text-sm text-blue-600 dark:text-blue-400 hover:underline"
                                                 onClick={() => useTreeStore.getState().selectPerson(p.id)}
                                             >
                                                 {getPersonName(p.english_name, p.urdu_name)}
@@ -209,13 +209,13 @@ export function PersonDrawer({
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-400">—</p>
+                                    <p className="text-sm text-muted-foreground">—</p>
                                 )}
                             </div>
 
                             {/* Siblings */}
                             <div>
-                                <p className="text-xs font-medium text-gray-400 uppercase mb-2 flex items-center gap-1.5">
+                                <p className="text-xs font-medium text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
                                     <Users className="w-3.5 h-3.5" />
                                     {t('person.siblings')}
                                 </p>
@@ -224,7 +224,7 @@ export function PersonDrawer({
                                         {siblings.map((sibling) => (
                                             <button
                                                 key={sibling.id}
-                                                className="block text-sm text-violet-600 hover:underline"
+                                                className="block text-sm text-violet-600 dark:text-violet-400 hover:underline"
                                                 onClick={() =>
                                                     useTreeStore
                                                         .getState()
@@ -239,13 +239,13 @@ export function PersonDrawer({
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-400">—</p>
+                                    <p className="text-sm text-muted-foreground">—</p>
                                 )}
                             </div>
 
                             {/* Spouses */}
                             <div>
-                                <p className="text-xs font-medium text-gray-400 uppercase mb-2 flex items-center gap-1.5">
+                                <p className="text-xs font-medium text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
                                     <Heart className="w-3.5 h-3.5" />
                                     {t('person.spouses')}
                                 </p>
@@ -254,7 +254,7 @@ export function PersonDrawer({
                                         {spouses.map((s) => (
                                             <button
                                                 key={s.id}
-                                                className="block text-sm text-pink-600 hover:underline"
+                                                className="block text-sm text-pink-600 dark:text-pink-400 hover:underline"
                                                 onClick={() => useTreeStore.getState().selectPerson(s.id)}
                                             >
                                                 {getPersonName(s.english_name, s.urdu_name)}
@@ -262,13 +262,13 @@ export function PersonDrawer({
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-400">—</p>
+                                    <p className="text-sm text-muted-foreground">—</p>
                                 )}
                             </div>
 
                             {/* Children */}
                             <div>
-                                <p className="text-xs font-medium text-gray-400 uppercase mb-2 flex items-center gap-1.5">
+                                <p className="text-xs font-medium text-muted-foreground uppercase mb-2 flex items-center gap-1.5">
                                     <UserPlus className="w-3.5 h-3.5" />
                                     {t('person.children')}
                                 </p>
@@ -279,7 +279,7 @@ export function PersonDrawer({
                                             .map((c) => (
                                                 <button
                                                     key={c.id}
-                                                    className="block text-sm text-green-600 hover:underline"
+                                                    className="block text-sm text-green-600 dark:text-green-400 hover:underline"
                                                     onClick={() =>
                                                         useTreeStore.getState().selectPerson(c.id)
                                                     }
@@ -289,7 +289,7 @@ export function PersonDrawer({
                                             ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-400">—</p>
+                                    <p className="text-sm text-muted-foreground">—</p>
                                 )}
                             </div>
                         </div>
@@ -297,7 +297,7 @@ export function PersonDrawer({
 
                     {/* Actions */}
                     {canEdit && (
-                        <div className="border-t border-gray-200 px-6 py-4 space-y-2">
+                        <div className="border-t border-border px-6 py-4 space-y-2">
                             <div className="grid grid-cols-2 gap-2">
                                 <Button
                                     variant="outline"

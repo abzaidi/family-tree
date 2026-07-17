@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,9 +26,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla) inject attributes into <body> before React hydrates */}
+      {/* suppressHydrationWarning: theme class + browser extensions may differ before hydration */}
       <body className="min-h-full font-sans antialiased" suppressHydrationWarning>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

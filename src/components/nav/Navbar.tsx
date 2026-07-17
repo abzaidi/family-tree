@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { LanguageSwitch } from './LanguageSwitch';
 import { UserMenu } from './UserMenu';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 
@@ -18,14 +19,14 @@ export function Navbar() {
     const { t } = useI18n();
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm">
+        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 shadow-sm backdrop-blur-xl">
             <div className="flex items-center justify-between h-14 px-4">
                 {/* Left: Logo */}
                 <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
                         <TreePine className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-bold text-base text-gray-800 tracking-tight">
+                    <span className="font-bold text-base text-foreground tracking-tight">
                         {t('app.title')}
                     </span>
                 </div>
@@ -33,12 +34,12 @@ export function Navbar() {
                 {/* Center: Search */}
                 <button
                     onClick={() => setSearchOpen(true)}
-                    className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg border border-gray-200 bg-gray-50/80 hover:bg-gray-100 transition-colors text-sm text-gray-400 min-w-[240px]"
+                    className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg border border-border bg-muted/60 hover:bg-muted transition-colors text-sm text-muted-foreground min-w-[240px]"
                     aria-label={t('nav.search')}
                 >
                     <Search className="w-4 h-4" />
                     <span className="flex-1 text-left">{t('nav.search')}</span>
-                    <kbd className="text-[10px] bg-white border border-gray-200 rounded px-1.5 py-0.5 font-mono text-gray-400">
+                    <kbd className="text-[10px] bg-background border border-border rounded px-1.5 py-0.5 font-mono text-muted-foreground">
                         ⌘K
                     </kbd>
                 </button>
@@ -77,6 +78,7 @@ export function Navbar() {
                     </Button>
 
                     <Separator orientation="vertical" className="h-6 mx-1" />
+                    <ThemeToggle />
                     <LanguageSwitch />
                     <UserMenu />
                 </div>

@@ -27,6 +27,12 @@ export const en: TranslationStrings = {
     'nav.language': 'Language',
     'nav.manageUsers': 'Manage users',
 
+    // Theme
+    'theme.label': 'Theme',
+    'theme.light': 'Light',
+    'theme.dark': 'Dark',
+    'theme.system': 'System',
+
     // Admin
     'admin.usersTitle': 'User Management',
     'admin.usersSubtitle': 'View signed-up users and update their permissions',

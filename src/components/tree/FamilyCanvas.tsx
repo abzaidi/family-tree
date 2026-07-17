@@ -97,7 +97,7 @@ function FamilyCanvasInner() {
                 minZoom={0.1}
                 maxZoom={2}
                 proOptions={{ hideAttribution: true }}
-                className="bg-gray-50/50"
+                className="bg-muted/40"
                 nodesDraggable={false}
                 nodesConnectable={false}
                 elementsSelectable={true}
@@ -110,12 +110,9 @@ function FamilyCanvasInner() {
                     variant={BackgroundVariant.Dots}
                     gap={20}
                     size={1}
-                    color="#e2e8f0"
+                    color="var(--tree-dot)"
                 />
-                <Controls
-                    showInteractive={false}
-                    className="!bg-white !border !border-gray-200 !rounded-xl !shadow-lg"
-                />
+                <Controls showInteractive={false} />
             </ReactFlow>
         </div>
     );

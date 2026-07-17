@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Plus, TreePine } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,7 @@ import { PersonDrawer } from '@/components/panels/PersonDrawer';
 import { AddPersonModal } from '@/components/panels/AddPersonModal';
 import { EditPersonModal } from '@/components/panels/EditPersonModal';
 import { DeleteConfirmDialog } from '@/components/panels/DeleteConfirmDialog';
+import { ThemeToaster } from '@/components/theme/theme-toaster';
 import { usePersons } from '@/hooks/usePersons';
 import { useUnions } from '@/hooks/useUnions';
 import { useAuth } from '@/hooks/useAuth';
@@ -173,7 +174,7 @@ function TreeApp() {
 
   if (authLoading || dataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -182,7 +183,7 @@ function TreeApp() {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center animate-pulse">
             <TreePine className="w-6 h-6 text-white" />
           </div>
-          <p className="text-sm text-gray-400">{t('state.loading')}</p>
+          <p className="text-sm text-muted-foreground">{t('state.loading')}</p>
         </motion.div>
       </div>
     );
@@ -198,19 +199,19 @@ function TreeApp() {
         {hasRoot ? (
           <FamilyCanvas />
         ) : (
-          <div className="h-full flex items-center justify-center bg-gray-50/50">
+          <div className="h-full flex items-center justify-center bg-muted/40">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center"
             >
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center mx-auto mb-5">
-                <TreePine className="w-10 h-10 text-emerald-600" />
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950 dark:to-teal-950 flex items-center justify-center mx-auto mb-5">
+                <TreePine className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">
+              <h2 className="text-xl font-bold text-foreground mb-2">
                 {t('state.empty')}
               </h2>
-              <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
+              <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
                 Start by adding the root person of your family tree
               </p>
               {canEdit && (
@@ -220,7 +221,7 @@ function TreeApp() {
                     setAddMode('root');
                     setAddModalOpen(true);
                   }}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-200"
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg shadow-emerald-200/50 dark:shadow-emerald-950/40"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   {t('action.addRoot')}
@@ -270,15 +271,7 @@ export default function HomePage() {
     <I18nProvider>
       <TooltipProvider>
         <TreeApp />
-        <Toaster
-          position="bottom-center"
-          toastOptions={{
-            className: 'font-sans',
-            style: {
-              borderRadius: '12px',
-            },
-          }}
-        />
+        <ThemeToaster />
       </TooltipProvider>
     </I18nProvider>
   );

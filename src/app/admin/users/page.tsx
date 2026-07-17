@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
-import { Toaster } from 'sonner';
 import { createClient } from '@/lib/supabase/server';
 import { I18nProvider } from '@/lib/i18n/context';
 import { AdminUsersClient } from '@/components/admin/AdminUsersClient';
+import { ThemeToaster } from '@/components/theme/theme-toaster';
 import type { AppUser } from '@/types';
 
 export default async function AdminUsersPage() {
@@ -33,15 +33,7 @@ export default async function AdminUsersPage() {
         initialUsers={(users as AppUser[] | null) ?? []}
         initialError={error?.message ?? null}
       />
-      <Toaster
-        position="bottom-center"
-        toastOptions={{
-          className: 'font-sans',
-          style: {
-            borderRadius: '12px',
-          },
-        }}
-      />
+      <ThemeToaster />
     </I18nProvider>
   );
 }

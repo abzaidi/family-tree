@@ -83,12 +83,12 @@ function PersonNodeComponent({ data, id }: NodeProps) {
             <motion.div
                 className={`
                     relative cursor-pointer select-none
-                    rounded-2xl border-2 bg-white shadow-lg
+                    rounded-2xl border-2 bg-card shadow-lg
                     transition-colors duration-200
                     w-[260px] h-[110px]
                     ${isFemale
-                        ? 'border-pink-200 hover:border-pink-400 hover:shadow-pink-100'
-                        : 'border-blue-200 hover:border-blue-400 hover:shadow-blue-100'
+                        ? 'border-pink-200 hover:border-pink-400 hover:shadow-pink-100 dark:border-pink-800 dark:hover:border-pink-500 dark:hover:shadow-pink-950/40'
+                        : 'border-blue-200 hover:border-blue-400 hover:shadow-blue-100 dark:border-blue-800 dark:hover:border-blue-500 dark:hover:shadow-blue-950/40'
                     }
                 `}
                 whileHover={{ scale: 1.03, y: -2 }}
@@ -108,7 +108,9 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                     {/* Gender icon and Name */}
                     <div className="flex items-start gap-2.5 mb-1">
                         <div
-                            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${isFemale ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'
+                            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${isFemale
+                                ? 'bg-pink-50 text-pink-500 dark:bg-pink-950/60 dark:text-pink-300'
+                                : 'bg-blue-50 text-blue-500 dark:bg-blue-950/60 dark:text-blue-300'
                                 }`}
                         >
                             {isFemale ? (
@@ -118,7 +120,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                             )}
                         </div>
                         <span
-                            className={`min-w-0 flex-1 line-clamp-2 font-semibold text-[15px] text-gray-800 leading-snug break-words ${locale === 'ur' ? 'font-urdu' : ''
+                            className={`min-w-0 flex-1 line-clamp-2 font-semibold text-[15px] text-foreground leading-snug break-words ${locale === 'ur' ? 'font-urdu' : ''
                                 }`}
                             dir={locale === 'ur' ? 'rtl' : 'ltr'}
                             style={{ wordBreak: 'break-word' }}
@@ -129,7 +131,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
 
                     {/* Year range */}
                     {yearRange && (
-                        <p className="text-xs text-gray-400 mt-1.5 pl-10">{yearRange}</p>
+                        <p className="text-xs text-muted-foreground mt-1.5 pl-10">{yearRange}</p>
                     )}
                 </div>
 
@@ -139,12 +141,12 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                         onClick={handleExpandToggle}
                         className={`
                             absolute -bottom-3.5 left-1/2 -translate-x-1/2
-                            w-7 h-7 rounded-full border-2 bg-white
+                            w-7 h-7 rounded-full border-2 bg-card
                             flex items-center justify-center
                             transition-colors z-10 shadow-sm
                             ${isFemale
-                                ? 'border-pink-300 text-pink-500 hover:bg-pink-50'
-                                : 'border-blue-300 text-blue-500 hover:bg-blue-50'
+                                ? 'border-pink-300 text-pink-500 hover:bg-pink-50 dark:border-pink-700 dark:text-pink-300 dark:hover:bg-pink-950/50'
+                                : 'border-blue-300 text-blue-500 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/50'
                             }
                         `}
                         aria-label={isExpanded ? 'Collapse' : 'Expand'}
