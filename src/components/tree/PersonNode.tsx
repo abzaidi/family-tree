@@ -3,27 +3,27 @@
 import { memo, useCallback } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronRight, User, Heart } from 'lucide-react';
+import { Plus, Minus, User, Heart } from 'lucide-react';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 import type { Person } from '@/types';
 
 interface PersonNodeData {
     person: Person;
+    expandable?: boolean;
     [key: string]: unknown;
 }
 
 function PersonNodeComponent({ data, id }: NodeProps) {
     const nodeData = data as unknown as PersonNodeData;
     const person = nodeData.person;
-    const { expandedNodeIds, toggleNode, selectPerson, unions, unionChildren } = useTreeStore();
+    const { expandedNodeIds, toggleNode, selectPerson } = useTreeStore();
     const { getPersonName, locale } = useI18n();
     const isExpanded = expandedNodeIds.has(id);
 
-    const hasChildren = unions.some((u) => {
-        if (u.partner1_id !== id && u.partner2_id !== id) return false;
-        return unionChildren.some((uc) => uc.union_id === u.id);
-    });
+    // Set by the layout engine only on nodes whose expansion actually reveals
+    // something (spouse nodes and dead-end nodes get no toggle)
+    const expandable = Boolean(nodeData.expandable);
 
     const handleClick = useCallback(
         (e: React.MouseEvent) => {
@@ -55,6 +55,30 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                 position={Position.Top}
                 className="!w-3 !h-1 !bg-transparent !border-0 !min-h-0 !pointer-events-none"
                 id="top"
+            />
+            <Handle
+                type="source"
+                position={Position.Left}
+                className="!w-1 !h-3 !bg-transparent !border-0 !min-w-0 !pointer-events-none"
+                id="left-source"
+            />
+            <Handle
+                type="target"
+                position={Position.Left}
+                className="!w-1 !h-3 !bg-transparent !border-0 !min-w-0 !pointer-events-none"
+                id="left-target"
+            />
+            <Handle
+                type="source"
+                position={Position.Right}
+                className="!w-1 !h-3 !bg-transparent !border-0 !min-w-0 !pointer-events-none"
+                id="right-source"
+            />
+            <Handle
+                type="target"
+                position={Position.Right}
+                className="!w-1 !h-3 !bg-transparent !border-0 !min-w-0 !pointer-events-none"
+                id="right-target"
             />
             <motion.div
                 className={`
@@ -110,7 +134,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                 </div>
 
                 {/* Expand/Collapse button */}
-                {hasChildren && (
+                {expandable && (
                     <button
                         onClick={handleExpandToggle}
                         className={`
@@ -126,9 +150,9 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                         aria-label={isExpanded ? 'Collapse' : 'Expand'}
                     >
                         {isExpanded ? (
-                            <ChevronDown className="w-4 h-4" />
+                            <Minus className="w-4 h-4" />
                         ) : (
-                            <ChevronRight className="w-4 h-4" />
+                            <Plus className="w-4 h-4" />
                         )}
                     </button>
                 )}

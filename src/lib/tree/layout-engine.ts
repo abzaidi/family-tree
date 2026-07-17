@@ -46,6 +46,21 @@ export function buildTreeLayout(
         return union.partner1_id === personId ? union.partner2_id : union.partner1_id;
     }
 
+    // A traversed node can expand if any of its unions has a visible spouse or child
+    function isExpandable(personId: string): boolean {
+        return getPersonUnions(personId).some((union) => {
+            const spouseId = getSpouseId(union, personId);
+            if (spouseId) {
+                const spouse = personMap.get(spouseId);
+                if (spouse && !spouse.deleted) return true;
+            }
+            return getUnionChildren(union.id).some((cid) => {
+                const child = personMap.get(cid);
+                return child && !child.deleted;
+            });
+        });
+    }
+
     // Subtree width calculation (returns horizontal space required by subtree)
     function calcSubtreeWidth(personId: string, visited: Set<string>): number {
         if (visited.has(personId)) return NODE_WIDTH;
@@ -94,7 +109,7 @@ export function buildTreeLayout(
                 id: personId,
                 type: 'person',
                 position: { x: centerX - NODE_WIDTH / 2, y },
-                data: { person },
+                data: { person, expandable: isExpandable(personId) },
             });
             return;
         }
@@ -119,7 +134,7 @@ export function buildTreeLayout(
                     id: personId,
                     type: 'person',
                     position: { x: centerX - NODE_WIDTH / 2, y },
-                    data: { person },
+                    data: { person, expandable: false },
                 });
                 return;
             }
@@ -144,7 +159,7 @@ export function buildTreeLayout(
                 id: personId,
                 type: 'person',
                 position: { x: primaryX - NODE_WIDTH / 2, y },
-                data: { person },
+                data: { person, expandable: true },
             });
 
             if (renderSpouse && spouseId) {
@@ -153,8 +168,21 @@ export function buildTreeLayout(
                     id: spouseId,
                     type: 'person',
                     position: { x: spouseX - NODE_WIDTH / 2, y },
-                    data: { person: personMap.get(spouseId)! },
+                    data: { person: personMap.get(spouseId)!, expandable: false },
                 });
+
+                if (children.length === 0) {
+                    edges.push({
+                        id: `e-${personId}-${spouseId}`,
+                        source: personId,
+                        target: spouseId,
+                        type: 'straight',
+                        style: EDGE_STYLE,
+                        sourceHandle: 'right-source',
+                        targetHandle: 'left-target',
+                    });
+                    return;
+                }
 
                 edges.push({
                     id: `e-${spouseId}-${unionNodeId}`,
@@ -215,7 +243,7 @@ export function buildTreeLayout(
             id: personId,
             type: 'person',
             position: { x: centerX - NODE_WIDTH / 2, y },
-            data: { person },
+            data: { person, expandable: true },
         });
 
         const leftCount = Math.ceil(myUnions.length / 2);
@@ -254,6 +282,27 @@ export function buildTreeLayout(
             const unionNodeY = y + NODE_HEIGHT + 35;
             const unionNodeId = `union-${union.id}`;
 
+            if (children.length === 0 && renderSpouse && spouseId) {
+                positioned.set(spouseId, { x: spouseX, y });
+                nodes.push({
+                    id: spouseId,
+                    type: 'person',
+                    position: { x: spouseX - NODE_WIDTH / 2, y },
+                    data: { person: personMap.get(spouseId)!, expandable: false },
+                });
+                edges.push({
+                    id: `e-${personId}-${spouseId}`,
+                    source: personId,
+                    target: spouseId,
+                    type: 'straight',
+                    style: EDGE_STYLE,
+                    sourceHandle: 'left-source',
+                    targetHandle: 'right-target',
+                });
+                limitLeft = spouseX - NODE_WIDTH / 2 - H_GAP;
+                return;
+            }
+
             nodes.push({
                 id: unionNodeId,
                 type: 'union',
@@ -277,7 +326,7 @@ export function buildTreeLayout(
                     id: spouseId,
                     type: 'person',
                     position: { x: spouseX - NODE_WIDTH / 2, y },
-                    data: { person: personMap.get(spouseId)! },
+                    data: { person: personMap.get(spouseId)!, expandable: false },
                 });
 
                 edges.push({
@@ -350,6 +399,27 @@ export function buildTreeLayout(
             const unionNodeY = y + NODE_HEIGHT + 35;
             const unionNodeId = `union-${union.id}`;
 
+            if (children.length === 0 && renderSpouse && spouseId) {
+                positioned.set(spouseId, { x: spouseX, y });
+                nodes.push({
+                    id: spouseId,
+                    type: 'person',
+                    position: { x: spouseX - NODE_WIDTH / 2, y },
+                    data: { person: personMap.get(spouseId)!, expandable: false },
+                });
+                edges.push({
+                    id: `e-${personId}-${spouseId}`,
+                    source: personId,
+                    target: spouseId,
+                    type: 'straight',
+                    style: EDGE_STYLE,
+                    sourceHandle: 'right-source',
+                    targetHandle: 'left-target',
+                });
+                limitRight = spouseX + NODE_WIDTH / 2 + H_GAP;
+                return;
+            }
+
             nodes.push({
                 id: unionNodeId,
                 type: 'union',
@@ -373,7 +443,7 @@ export function buildTreeLayout(
                     id: spouseId,
                     type: 'person',
                     position: { x: spouseX - NODE_WIDTH / 2, y },
-                    data: { person: personMap.get(spouseId)! },
+                    data: { person: personMap.get(spouseId)!, expandable: false },
                 });
 
                 edges.push({

@@ -31,7 +31,6 @@ function FamilyCanvasInner() {
         expandedNodeIds,
     } = useTreeStore();
     const initialFitDone = useRef(false);
-    const skipNextAutoFit = useRef(false);
     const [focusPersonId, setFocusPersonId] = useState<string | null>(null);
 
     const activePersons = useMemo(
@@ -60,20 +59,8 @@ function FamilyCanvasInner() {
         }
     }, [nodes.length, fitView]);
 
-    // Re-fit when the tree layout changes (expand/collapse)
-    useEffect(() => {
-        if (skipNextAutoFit.current) {
-            skipNextAutoFit.current = false;
-            return;
-        }
-        if (initialFitDone.current && nodes.length > 0) {
-            setTimeout(() => fitView({ padding: 0.3, duration: 400 }), 50);
-        }
-    }, [expandedNodeIds, fitView, nodes.length]);
-
     useEffect(() => {
         const handleFocusPerson = (event: Event) => {
-            skipNextAutoFit.current = true;
             setFocusPersonId((event as CustomEvent<string>).detail);
         };
 
@@ -93,7 +80,6 @@ function FamilyCanvasInner() {
                 personNode.position.y + 55,
                 { zoom: 1.1, duration: 600 }
             );
-            skipNextAutoFit.current = false;
             setFocusPersonId(null);
         }, 75);
 
