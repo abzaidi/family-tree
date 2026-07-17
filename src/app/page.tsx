@@ -48,10 +48,14 @@ function TreeApp() {
   const [deleteTarget, setDeleteTarget] = useState<Person | null>(null);
   const [deleteDescendantCount, setDeleteDescendantCount] = useState(0);
 
+  // Data-loading state prevents the empty "add root" screen from flashing
+  // before the tree data arrives
+  const [dataLoading, setDataLoading] = useState(true);
+
   // Fetch data on mount
   useEffect(() => {
     if (!authLoading) {
-      fetchAll();
+      fetchAll().finally(() => setDataLoading(false));
     }
   }, [authLoading, fetchAll]);
 
@@ -167,7 +171,7 @@ function TreeApp() {
     }
   }, [deleteTarget, softDeleteBranch, t]);
 
-  if (authLoading) {
+  if (authLoading || dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <motion.div
@@ -226,28 +230,6 @@ function TreeApp() {
           </div>
         )}
 
-        {/* Floating add button */}
-        {hasRoot && canEdit && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="absolute bottom-6 right-6 z-40"
-          >
-            <Button
-              size="lg"
-              className="rounded-full w-14 h-14 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-200"
-              onClick={() => {
-                setTargetPerson(null);
-                setAddMode('root');
-                setAddModalOpen(true);
-              }}
-              aria-label={t('action.addPerson')}
-            >
-              <Plus className="w-6 h-6" />
-            </Button>
-          </motion.div>
-        )}
       </main>
 
       {/* Panels & Modals */}

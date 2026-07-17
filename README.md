@@ -15,7 +15,7 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
 ### 1. Database Setup
 1. Log into your [Supabase Dashboard](https://supabase.com).
 2. Create a new project.
-3. Open the **SQL Editor** in the dashboard and run the entire contents of the `supabase-schema.sql` file provided in this repository. 
+3. Open the **SQL Editor** in the dashboard and run the entire contents of the `migrations/supabase-schema.sql` file provided in this repository. 
    - This sets up the schema tables: `persons`, `unions`, `union_children`, `user_roles`, `audit_log`, and `app_config`, along with indices, audit log triggers, and helper permissions.
 4. Execute the following command for your admin user UUID to grant edit permissions:
    ```sql
@@ -57,4 +57,4 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
 - `src/lib/` — Shared libraries, i18n configurations, and the `tree/` layout routing engine.
 - `src/store/` — Zustand global tree rendering states.
 - `src/types/` — Global TypeScript definitions.
-- `supabase-schema.sql` — PostgreSQL database and Security definition scripts.
+- `migrations/` — PostgreSQL schema, RLS updates, and test seed/cleanup scripts.
