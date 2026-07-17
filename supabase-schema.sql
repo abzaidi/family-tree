@@ -242,11 +242,13 @@ ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_config ENABLE ROW LEVEL SECURITY;
 
+-- Public read policies keep the tree viewable without an account.
+-- Write policies below remain restricted to authenticated editors/admins.
 -- PERSONS policies
-CREATE POLICY "Anyone authenticated can view non-deleted persons"
+CREATE POLICY "Anyone can view non-deleted persons"
   ON persons FOR SELECT
-  TO authenticated
-  USING (true);
+  TO anon, authenticated
+  USING (deleted = false);
 
 CREATE POLICY "Editors and admins can insert persons"
   ON persons FOR INSERT
@@ -265,9 +267,9 @@ CREATE POLICY "Admins can delete persons"
   USING (is_admin(auth.uid()));
 
 -- UNIONS policies
-CREATE POLICY "Anyone authenticated can view unions"
+CREATE POLICY "Anyone can view unions"
   ON unions FOR SELECT
-  TO authenticated
+  TO anon, authenticated
   USING (true);
 
 CREATE POLICY "Editors and admins can insert unions"
@@ -287,9 +289,9 @@ CREATE POLICY "Admins can delete unions"
   USING (is_admin(auth.uid()));
 
 -- UNION_CHILDREN policies
-CREATE POLICY "Anyone authenticated can view union_children"
+CREATE POLICY "Anyone can view union_children"
   ON union_children FOR SELECT
-  TO authenticated
+  TO anon, authenticated
   USING (true);
 
 CREATE POLICY "Editors and admins can insert union_children"
@@ -339,9 +341,9 @@ CREATE POLICY "Admins can view audit log"
 -- Insert is done via trigger (SECURITY DEFINER), no direct policy needed for insert
 
 -- APP_CONFIG policies
-CREATE POLICY "Anyone authenticated can view config"
+CREATE POLICY "Anyone can view config"
   ON app_config FOR SELECT
-  TO authenticated
+  TO anon, authenticated
   USING (true);
 
 CREATE POLICY "Editors and admins can manage config"

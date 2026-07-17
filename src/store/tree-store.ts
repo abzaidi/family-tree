@@ -33,6 +33,7 @@ interface TreeState {
     selectPerson: (id: string | null) => void;
     toggleNode: (id: string) => void;
     expandNode: (id: string) => void;
+    expandNodes: (ids: string[]) => void;
     collapseNode: (id: string) => void;
     expandAll: () => void;
     collapseAll: () => void;
@@ -88,6 +89,12 @@ export const useTreeStore = create<TreeState>((set, get) => ({
         set((state) => {
             const next = new Set(state.expandedNodeIds);
             next.add(id);
+            return { expandedNodeIds: next };
+        }),
+    expandNodes: (ids) =>
+        set((state) => {
+            const next = new Set(state.expandedNodeIds);
+            ids.forEach((id) => next.add(id));
             return { expandedNodeIds: next };
         }),
     collapseNode: (id) =>

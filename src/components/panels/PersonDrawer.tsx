@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useState } from 'react';
 import {
     Sheet,
     SheetContent,
@@ -23,7 +22,7 @@ import {
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 import { useAuth } from '@/hooks/useAuth';
-import type { Person, Union } from '@/types';
+import type { Person } from '@/types';
 
 interface PersonDrawerProps {
     onEdit: (person: Person) => void;
@@ -85,6 +84,30 @@ export function PersonDrawer({
             parents = [p1, p2].filter(Boolean) as Person[];
         }
     }
+
+    // Include full and half siblings who share at least one recorded parent
+    const parentIds = new Set(parents.map((parent) => parent.id));
+    const siblingUnionIds = new Set(
+        unions
+            .filter(
+                (union) =>
+                    parentIds.has(union.partner1_id) ||
+                    (union.partner2_id !== null && parentIds.has(union.partner2_id))
+            )
+            .map((union) => union.id)
+    );
+    const siblingIds = new Set(
+        unionChildren
+            .filter(
+                (child) =>
+                    siblingUnionIds.has(child.union_id) &&
+                    child.child_id !== person.id
+            )
+            .map((child) => child.child_id)
+    );
+    const siblings = persons.filter(
+        (candidate) => siblingIds.has(candidate.id) && !candidate.deleted
+    );
 
     return (
         <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
@@ -182,6 +205,36 @@ export function PersonDrawer({
                                                 onClick={() => useTreeStore.getState().selectPerson(p.id)}
                                             >
                                                 {getPersonName(p.english_name, p.urdu_name)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-400">—</p>
+                                )}
+                            </div>
+
+                            {/* Siblings */}
+                            <div>
+                                <p className="text-xs font-medium text-gray-400 uppercase mb-2 flex items-center gap-1.5">
+                                    <Users className="w-3.5 h-3.5" />
+                                    {t('person.siblings')}
+                                </p>
+                                {siblings.length > 0 ? (
+                                    <div className="space-y-1">
+                                        {siblings.map((sibling) => (
+                                            <button
+                                                key={sibling.id}
+                                                className="block text-sm text-violet-600 hover:underline"
+                                                onClick={() =>
+                                                    useTreeStore
+                                                        .getState()
+                                                        .selectPerson(sibling.id)
+                                                }
+                                            >
+                                                {getPersonName(
+                                                    sibling.english_name,
+                                                    sibling.urdu_name
+                                                )}
                                             </button>
                                         ))}
                                     </div>

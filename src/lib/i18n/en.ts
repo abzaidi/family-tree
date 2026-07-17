@@ -37,6 +37,7 @@ export const en: TranslationStrings = {
     'person.deathYear': 'Death Year',
     'person.notes': 'Notes',
     'person.parents': 'Parents',
+    'person.siblings': 'Siblings',
     'person.spouses': 'Spouses',
     'person.children': 'Children',
     'person.born': 'Born',

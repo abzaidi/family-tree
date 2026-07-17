@@ -37,6 +37,7 @@ export const ur: TranslationStrings = {
     'person.deathYear': 'سالِ وفات',
     'person.notes': 'نوٹس',
     'person.parents': 'والدین',
+    'person.siblings': 'بہن بھائی',
     'person.spouses': 'ازواج',
     'person.children': 'اولاد',
     'person.born': 'پیدائش',

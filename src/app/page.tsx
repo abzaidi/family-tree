@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Plus, TreePine } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -31,7 +30,7 @@ const FamilyCanvas = dynamic(
 
 function TreeApp() {
   const { t } = useI18n();
-  const { user, loading: authLoading, canEdit } = useAuth();
+  const { loading: authLoading, canEdit } = useAuth();
   const { fetchAll, createPerson, editPerson, softDeleteBranch, getDescendantCount, setRootPerson } =
     usePersons();
   const { createUnion, addChildToUnion, getUnionsForPerson } = useUnions();
@@ -51,10 +50,10 @@ function TreeApp() {
 
   // Fetch data on mount
   useEffect(() => {
-    if (user) {
+    if (!authLoading) {
       fetchAll();
     }
-  }, [user, fetchAll]);
+  }, [authLoading, fetchAll]);
 
   // Auto-expand root person on first load
   useEffect(() => {
@@ -238,7 +237,7 @@ function TreeApp() {
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
-            className="absolute bottom-6 right-6 z-40"
+            className="absolute bottom-48 right-6 z-40"
           >
             <Button
               size="lg"

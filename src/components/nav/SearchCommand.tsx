@@ -14,7 +14,16 @@ import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 
 export function SearchCommand() {
-    const { isSearchOpen, setSearchOpen, persons, selectPerson, expandNode } =
+    const {
+        isSearchOpen,
+        setSearchOpen,
+        persons,
+        unions,
+        unionChildren,
+        rootPersonId,
+        selectPerson,
+        expandNodes,
+    } =
         useTreeStore();
     const { t, getPersonName } = useI18n();
     const [query, setQuery] = useState('');
@@ -48,13 +57,65 @@ export function SearchCommand() {
 
     const handleSelect = useCallback(
         (personId: string) => {
-            // Expand all ancestors to make this node visible
-            expandNode(personId);
+            const findExpansionPath = (): string[] => {
+                if (!rootPersonId || rootPersonId === personId) return [];
+
+                const queue: Array<{ id: string; path: string[] }> = [
+                    { id: rootPersonId, path: [] },
+                ];
+                const visited = new Set<string>();
+
+                while (queue.length > 0) {
+                    const current = queue.shift()!;
+                    if (visited.has(current.id)) continue;
+                    visited.add(current.id);
+
+                    const nextPath = [...current.path, current.id];
+                    const personUnions = unions.filter(
+                        (union) =>
+                            union.partner1_id === current.id ||
+                            union.partner2_id === current.id
+                    );
+
+                    for (const union of personUnions) {
+                        const spouseId =
+                            union.partner1_id === current.id
+                                ? union.partner2_id
+                                : union.partner1_id;
+                        if (spouseId === personId) return nextPath;
+
+                        const childIds = unionChildren
+                            .filter((child) => child.union_id === union.id)
+                            .map((child) => child.child_id);
+
+                        for (const childId of childIds) {
+                            if (childId === personId) return nextPath;
+                            if (!visited.has(childId)) {
+                                queue.push({ id: childId, path: nextPath });
+                            }
+                        }
+                    }
+                }
+
+                return [];
+            };
+
+            expandNodes([...findExpansionPath(), personId]);
             selectPerson(personId);
             setSearchOpen(false);
             setQuery('');
+            window.dispatchEvent(
+                new CustomEvent<string>('focus-person', { detail: personId })
+            );
         },
-        [expandNode, selectPerson, setSearchOpen]
+        [
+            rootPersonId,
+            unions,
+            unionChildren,
+            expandNodes,
+            selectPerson,
+            setSearchOpen,
+        ]
     );
 
     return (

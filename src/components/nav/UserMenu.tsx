@@ -8,7 +8,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, Shield } from 'lucide-react';
+import { LogIn, LogOut, Shield } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/lib/i18n/context';
 
@@ -16,7 +17,17 @@ export function UserMenu() {
     const { user, role, signOut } = useAuth();
     const { t } = useI18n();
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <Link
+                href="/login"
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">{t('auth.login')}</span>
+            </Link>
+        );
+    }
 
     const initials = (user.email || 'U')[0].toUpperCase();
 

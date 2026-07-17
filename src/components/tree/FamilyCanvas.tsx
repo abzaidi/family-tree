@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import {
     ReactFlow,
     Background,
@@ -23,7 +23,7 @@ const nodeTypes: NodeTypes = {
 };
 
 function FamilyCanvasInner() {
-    const { fitView } = useReactFlow();
+    const { fitView, setCenter } = useReactFlow();
     const {
         persons,
         unions,
@@ -32,6 +32,8 @@ function FamilyCanvasInner() {
         expandedNodeIds,
     } = useTreeStore();
     const initialFitDone = useRef(false);
+    const skipNextAutoFit = useRef(false);
+    const [focusPersonId, setFocusPersonId] = useState<string | null>(null);
 
     const activePersons = useMemo(
         () => persons.filter((p) => !p.deleted),
@@ -61,10 +63,43 @@ function FamilyCanvasInner() {
 
     // Re-fit when the tree layout changes (expand/collapse)
     useEffect(() => {
+        if (skipNextAutoFit.current) {
+            skipNextAutoFit.current = false;
+            return;
+        }
         if (initialFitDone.current && nodes.length > 0) {
             setTimeout(() => fitView({ padding: 0.3, duration: 400 }), 50);
         }
     }, [expandedNodeIds, fitView, nodes.length]);
+
+    useEffect(() => {
+        const handleFocusPerson = (event: Event) => {
+            skipNextAutoFit.current = true;
+            setFocusPersonId((event as CustomEvent<string>).detail);
+        };
+
+        window.addEventListener('focus-person', handleFocusPerson);
+        return () => window.removeEventListener('focus-person', handleFocusPerson);
+    }, []);
+
+    useEffect(() => {
+        if (!focusPersonId) return;
+
+        const personNode = nodes.find((node) => node.id === focusPersonId);
+        if (!personNode) return;
+
+        const timeout = window.setTimeout(() => {
+            setCenter(
+                personNode.position.x + 130,
+                personNode.position.y + 55,
+                { zoom: 1.1, duration: 600 }
+            );
+            skipNextAutoFit.current = false;
+            setFocusPersonId(null);
+        }, 75);
+
+        return () => window.clearTimeout(timeout);
+    }, [focusPersonId, nodes, setCenter]);
 
     return (
         <div className="w-full h-full">
