@@ -1,16 +1,59 @@
 -- =============================================================================
--- Insert a missing generation between a direct parent and child
+-- Normalize national identity numbers to digits-only storage
 -- =============================================================================
 -- Run this once in the Supabase SQL Editor for existing projects.
--- Prefer migrations/supabase-person-profile-fields.sql on upgraded databases:
--- that migration already includes this RPC with profile/private fields.
--- The entire relationship rewrite happens in one transaction.
+-- Fresh installs that used the current supabase-schema.sql already include this.
 -- =============================================================================
 
-DROP FUNCTION IF EXISTS public.insert_person_in_middle(
-  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT
-);
+CREATE OR REPLACE FUNCTION public.normalize_national_identity_number(raw TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+  digits TEXT;
+BEGIN
+  IF raw IS NULL THEN
+    RETURN NULL;
+  END IF;
+  digits := regexp_replace(raw, '[^0-9]', '', 'g');
+  RETURN NULLIF(digits, '');
+END;
+$$;
 
+CREATE OR REPLACE FUNCTION public.normalize_person_private_details_national_id()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.national_identity_number :=
+    public.normalize_national_identity_number(NEW.national_identity_number);
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS normalize_national_id_person_private_details
+  ON public.person_private_details;
+
+CREATE TRIGGER normalize_national_id_person_private_details
+  BEFORE INSERT OR UPDATE OF national_identity_number
+  ON public.person_private_details
+  FOR EACH ROW
+  EXECUTE FUNCTION public.normalize_person_private_details_national_id();
+
+-- Backfill existing values (and remove empty leftover rows)
+UPDATE public.person_private_details
+SET national_identity_number =
+  public.normalize_national_identity_number(national_identity_number)
+WHERE national_identity_number IS NOT NULL;
+
+DELETE FROM public.person_private_details
+WHERE national_identity_number IS NULL;
+
+-- Keep middle-insert RPC in sync: pass raw value; trigger normalizes on insert.
+-- Replacing the insert body is unnecessary when the trigger is present, but
+-- we still normalize explicitly so SECURITY DEFINER inserts stay consistent
+-- even if trigger order changes.
 CREATE OR REPLACE FUNCTION public.insert_person_in_middle(
   selected_parent_id UUID,
   selected_child_id UUID,
@@ -37,6 +80,7 @@ DECLARE
   original_link public.union_children%ROWTYPE;
   inserted_person public.persons%ROWTYPE;
   inserted_parent_union public.unions%ROWTYPE;
+  normalized_nic TEXT;
 BEGIN
   IF auth.uid() IS NULL OR NOT public.can_edit(auth.uid()) THEN
     RAISE EXCEPTION 'Not authorized';
@@ -61,8 +105,6 @@ BEGIN
     RAISE EXCEPTION 'Death year cannot be before birth year';
   END IF;
 
-  -- A direct child has exactly one parent-union link. Lock it so two edits
-  -- cannot rewrite the same relationship concurrently.
   SELECT uc.*
   INTO original_link
   FROM public.union_children uc
@@ -112,21 +154,21 @@ BEGIN
   )
   RETURNING * INTO inserted_person;
 
-  -- Digits-only normalization is enforced by the private-details trigger once
-  -- migrations/supabase-normalize-national-id.sql has been applied.
-  IF NULLIF(BTRIM(new_national_identity_number), '') IS NOT NULL THEN
+  normalized_nic := public.normalize_national_identity_number(
+    new_national_identity_number
+  );
+
+  IF normalized_nic IS NOT NULL THEN
     INSERT INTO public.person_private_details (
       person_id,
       national_identity_number
     )
     VALUES (
       inserted_person.id,
-      BTRIM(new_national_identity_number)
+      normalized_nic
     );
   END IF;
 
-  -- The selected child now belongs to a new single-parent union headed by the
-  -- inserted person. Existing spouse/child unions of that child are untouched.
   INSERT INTO public.unions (partner1_id, partner2_id)
   VALUES (inserted_person.id, NULL)
   RETURNING * INTO inserted_parent_union;
@@ -135,8 +177,6 @@ BEGIN
   SET union_id = inserted_parent_union.id
   WHERE id = original_link.id;
 
-  -- The inserted person takes the selected child's former place in the exact
-  -- same parent union, preserving the other parent and all siblings.
   INSERT INTO public.union_children (union_id, child_id)
   VALUES (original_link.union_id, inserted_person.id);
 

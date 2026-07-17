@@ -40,7 +40,7 @@ export function Navbar({ canEdit, onInsertPerson }: NavbarProps) {
                 {/* Center: Search */}
                 <button
                     onClick={() => setSearchOpen(true)}
-                    className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg border border-border bg-muted/60 hover:bg-muted transition-colors text-sm text-muted-foreground min-w-[240px]"
+                    className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg border border-border bg-muted/60 hover:bg-muted transition-colors text-sm text-muted-foreground min-w-[280px] md:min-w-[320px] lg:min-w-[400px]"
                     aria-label={t('nav.search')}
                 >
                     <Search className="w-4 h-4" />

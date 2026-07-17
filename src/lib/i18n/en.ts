@@ -136,8 +136,21 @@ export const en: TranslationStrings = {
 
     // Search
     'search.title': 'Search Family Tree',
-    'search.placeholder': 'Search by name or serial...',
+    'search.placeholder': 'Search people...',
     'search.noResults': 'No results found',
+    'search.filters': 'Filters',
+    'search.clearFilters': 'Clear',
+    'search.filtersActive': 'Filtered',
+    'search.resultCount': '{count} result(s)',
+    'search.showMore': 'Show more ({remaining} remaining)',
+    'search.serialPlaceholder': 'e.g. FT-000001',
+    'search.anyGender': 'Any gender',
+    'search.anyCountry': 'Any country',
+    'search.anyState': 'Any state / province',
+    'search.anyCity': 'Any city',
+    'search.noStatesAvailable': 'No states in current data',
+    'search.noCitiesAvailable': 'No cities in current data',
+    'search.nationalIdPlaceholder': 'Enter ID number to search',
 
     // Family statistics
     'stats.title': 'Family',

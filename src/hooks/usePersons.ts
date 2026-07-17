@@ -2,7 +2,10 @@
 
 import { useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { toPublicPersonInsert } from '@/lib/person/format';
+import {
+    normalizeNationalIdentityNumber,
+    toPublicPersonInsert,
+} from '@/lib/person/format';
 import { useTreeStore } from '@/store/tree-store';
 import type {
     DeleteContext,
@@ -37,7 +40,7 @@ async function upsertPrivateDetails(
     personId: string,
     nationalIdentityNumber: string | null | undefined
 ): Promise<string | null> {
-    const normalized = nationalIdentityNumber?.trim() || null;
+    const normalized = normalizeNationalIdentityNumber(nationalIdentityNumber);
 
     if (!normalized) {
         const { error } = await supabase
@@ -170,8 +173,9 @@ export function usePersons() {
 
             const merged: Person = {
                 ...(person as Person),
-                national_identity_number:
-                    data.national_identity_number.trim() || null,
+                national_identity_number: normalizeNationalIdentityNumber(
+                    data.national_identity_number
+                ),
             };
             useTreeStore.getState().addPerson(merged);
             return merged;
@@ -248,7 +252,9 @@ export function usePersons() {
                     toast.error(privateError);
                     return false;
                 }
-                nationalIdentity = data.national_identity_number?.trim() || null;
+                nationalIdentity = normalizeNationalIdentityNumber(
+                    data.national_identity_number
+                );
             }
 
             useTreeStore.getState().updatePerson({
@@ -406,8 +412,9 @@ export function usePersons() {
                 new_state_province: data.state_province || null,
                 new_city_name: data.city_name || null,
                 new_phone_country_code: data.phone_country_code || null,
-                new_national_identity_number:
-                    data.national_identity_number || null,
+                new_national_identity_number: normalizeNationalIdentityNumber(
+                    data.national_identity_number
+                ),
             });
 
             if (error) {

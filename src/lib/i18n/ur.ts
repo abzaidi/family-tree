@@ -136,8 +136,21 @@ export const ur: TranslationStrings = {
 
     // Search
     'search.title': 'خاندانی شجرے میں تلاش کریں',
-    'search.placeholder': 'نام یا سیریل سے تلاش کریں...',
+    'search.placeholder': 'افراد تلاش کریں...',
     'search.noResults': 'کوئی نتائج نہیں ملے',
+    'search.filters': 'فلٹرز',
+    'search.clearFilters': 'صاف کریں',
+    'search.filtersActive': 'فلٹر شدہ',
+    'search.resultCount': '{count} نتیجہ/نتائج',
+    'search.showMore': 'مزید دکھائیں ({remaining} باقی)',
+    'search.serialPlaceholder': 'مثلاً FT-000001',
+    'search.anyGender': 'کوئی بھی جنس',
+    'search.anyCountry': 'کوئی بھی ملک',
+    'search.anyState': 'کوئی بھی صوبہ / ریاست',
+    'search.anyCity': 'کوئی بھی شہر',
+    'search.noStatesAvailable': 'موجودہ ڈیٹا میں کوئی صوبہ نہیں',
+    'search.noCitiesAvailable': 'موجودہ ڈیٹا میں کوئی شہر نہیں',
+    'search.nationalIdPlaceholder': 'تلاش کے لیے شناختی نمبر درج کریں',
 
     // Family statistics
     'stats.title': 'خاندان',

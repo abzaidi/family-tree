@@ -43,6 +43,10 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
     numbers, location/profile fields, editor-only national identity storage,
     and the updated middle-insertion RPC. Fresh installs that used the current
     `supabase-schema.sql` already include these columns and policies.
+12. Run `migrations/supabase-normalize-national-id.sql` once to normalize
+    existing national identity numbers to digits-only storage and enforce that
+    rule on future writes. Fresh installs that used the current
+    `supabase-schema.sql` already include this normalization.
 
 ### 2. Environment Configuration
 1. Rename/copy `.env.local.example` to `.env.local`:

@@ -224,6 +224,34 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
+-- Digits-only national identity normalization
+CREATE OR REPLACE FUNCTION public.normalize_national_identity_number(raw TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+  digits TEXT;
+BEGIN
+  IF raw IS NULL THEN
+    RETURN NULL;
+  END IF;
+  digits := regexp_replace(raw, '[^0-9]', '', 'g');
+  RETURN NULLIF(digits, '');
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.normalize_person_private_details_national_id()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.national_identity_number :=
+    public.normalize_national_identity_number(NEW.national_identity_number);
+  RETURN NEW;
+END;
+$$;
+
 -- ========================
 -- 5. TRIGGERS
 -- ========================
@@ -248,6 +276,12 @@ CREATE TRIGGER set_updated_at_person_private_details
   BEFORE UPDATE ON person_private_details
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER normalize_national_id_person_private_details
+  BEFORE INSERT OR UPDATE OF national_identity_number
+  ON person_private_details
+  FOR EACH ROW
+  EXECUTE FUNCTION public.normalize_person_private_details_national_id();
 
 -- Audit log triggers
 CREATE TRIGGER audit_persons
@@ -525,14 +559,15 @@ BEGIN
   )
   RETURNING * INTO inserted_person;
 
-  IF NULLIF(BTRIM(new_national_identity_number), '') IS NOT NULL THEN
+  IF public.normalize_national_identity_number(new_national_identity_number)
+     IS NOT NULL THEN
     INSERT INTO public.person_private_details (
       person_id,
       national_identity_number
     )
     VALUES (
       inserted_person.id,
-      BTRIM(new_national_identity_number)
+      public.normalize_national_identity_number(new_national_identity_number)
     );
   END IF;
 

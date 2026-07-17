@@ -231,6 +231,8 @@ BEGIN
   )
   RETURNING * INTO inserted_person;
 
+  -- Digits-only normalization is enforced by the private-details trigger once
+  -- migrations/supabase-normalize-national-id.sql has been applied.
   IF NULLIF(BTRIM(new_national_identity_number), '') IS NOT NULL THEN
     INSERT INTO public.person_private_details (
       person_id,

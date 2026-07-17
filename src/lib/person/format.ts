@@ -60,6 +60,15 @@ export function normalizeSearchText(value: string): string {
     return value.trim().toLowerCase();
 }
 
+/** Strip all non-digits so storage and search compare the same value. */
+export function normalizeNationalIdentityNumber(
+    value: string | null | undefined
+): string | null {
+    if (!value) return null;
+    const digits = value.replace(/\D/g, '');
+    return digits || null;
+}
+
 /** Central matcher so Phase 2 can add attribute filters without rewriting UIs. */
 export function personMatchesQuery(person: Person, query: string): boolean {
     const q = query.trim();
