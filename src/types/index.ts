@@ -1,6 +1,18 @@
 export type Gender = 'male' | 'female' | 'other';
 export type UserRole = 'admin' | 'editor' | 'viewer';
 export type AuditAction = 'create' | 'update' | 'delete' | 'restore';
+export type DeleteOnlyMode = 'lineage' | 'spouse';
+
+export interface DeleteContext {
+  personId: string;
+  isRoot: boolean;
+  isLineageMember: boolean;
+  isBranchingParent: boolean;
+  canDeleteOnly: boolean;
+  canDeleteBranch: boolean;
+  deleteOnlyMode: DeleteOnlyMode;
+  descendantCount: number;
+}
 
 export interface Person {
   id: string;

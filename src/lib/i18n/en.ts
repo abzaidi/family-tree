@@ -85,6 +85,14 @@ export const en: TranslationStrings = {
     'delete.confirm': 'Are you sure you want to delete this person?',
     'delete.descendants': 'This will also soft-delete {count} descendant(s).',
     'delete.warning': 'This action will mark the person and their descendants as deleted.',
+    'delete.onlyTitle': 'Delete Only This Person',
+    'delete.onlyDescription':
+        'Remove this person and their spouse links. Descendants stay in the tree and are reattached safely.',
+    'delete.branchTitle': 'Delete This Person and All Descendants',
+    'delete.branchDescription':
+        'Remove this person and soft-delete {count} descendant(s). Spouse people are kept.',
+    'delete.rootOnlyBranch':
+        'The root person can only be deleted with their whole branch, because there are no parents to receive their children.',
 
     // Union
     'union.selectSpouse': 'Select which spouse this child belongs to',

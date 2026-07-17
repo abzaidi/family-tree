@@ -15,13 +15,16 @@ import { SearchCommand } from '@/components/nav/SearchCommand';
 import { PersonDrawer } from '@/components/panels/PersonDrawer';
 import { AddPersonModal } from '@/components/panels/AddPersonModal';
 import { EditPersonModal } from '@/components/panels/EditPersonModal';
-import { DeleteConfirmDialog } from '@/components/panels/DeleteConfirmDialog';
+import {
+  DeleteConfirmDialog,
+  type DeleteChoice,
+} from '@/components/panels/DeleteConfirmDialog';
 import { ThemeToaster } from '@/components/theme/theme-toaster';
 import { usePersons } from '@/hooks/usePersons';
 import { useUnions } from '@/hooks/useUnions';
 import { useAuth } from '@/hooks/useAuth';
 import { useTreeStore } from '@/store/tree-store';
-import type { Person, PersonFormData } from '@/types';
+import type { DeleteContext, Person, PersonFormData } from '@/types';
 
 // Dynamic import for React Flow canvas to avoid SSR issues
 const FamilyCanvas = dynamic(
@@ -32,8 +35,16 @@ const FamilyCanvas = dynamic(
 function TreeApp() {
   const { t } = useI18n();
   const { loading: authLoading, canEdit } = useAuth();
-  const { fetchAll, createPerson, editPerson, softDeleteBranch, insertPersonInMiddle, getDescendantCount, setRootPerson } =
-    usePersons();
+  const {
+    fetchAll,
+    createPerson,
+    editPerson,
+    softDeleteBranch,
+    deletePersonOnly,
+    insertPersonInMiddle,
+    getDeleteContext,
+    setRootPerson,
+  } = usePersons();
   const { createUnion, createSpouseUnion, addChildToUnion, getUnionsForPerson } = useUnions();
   const { persons, rootPersonId, expandNode } = useTreeStore();
 
@@ -47,7 +58,7 @@ function TreeApp() {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Person | null>(null);
-  const [deleteDescendantCount, setDeleteDescendantCount] = useState(0);
+  const [deleteContext, setDeleteContext] = useState<DeleteContext | null>(null);
 
   // Data-loading state prevents the empty "add root" screen from flashing
   // before the tree data arrives
@@ -93,12 +104,11 @@ function TreeApp() {
 
   const handleDelete = useCallback(
     (person: Person) => {
-      const count = getDescendantCount(person.id);
       setDeleteTarget(person);
-      setDeleteDescendantCount(count);
+      setDeleteContext(getDeleteContext(person.id));
       setDeleteDialogOpen(true);
     },
-    [getDescendantCount]
+    [getDeleteContext]
   );
 
   const handleAddSubmit = useCallback(
@@ -186,14 +196,40 @@ function TreeApp() {
     [editPerson]
   );
 
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteTarget) return;
-    const success = await softDeleteBranch(deleteTarget.id);
-    if (success) {
-      toast.success(t('toast.deleted'));
-      useTreeStore.getState().setDrawerOpen(false);
-    }
-  }, [deleteTarget, softDeleteBranch, t]);
+  const handleDeleteConfirm = useCallback(
+    async (choice: DeleteChoice) => {
+      if (!deleteTarget || !deleteContext) return false;
+
+      let success = false;
+      if (choice === 'branch') {
+        if (!deleteContext.canDeleteBranch) return false;
+        success = await softDeleteBranch(deleteTarget.id);
+        if (success) {
+          await fetchAll();
+        }
+      } else {
+        if (!deleteContext.canDeleteOnly) return false;
+        success = await deletePersonOnly(
+          deleteTarget.id,
+          deleteContext.deleteOnlyMode
+        );
+      }
+
+      if (success) {
+        toast.success(t('toast.deleted'));
+        useTreeStore.getState().setDrawerOpen(false);
+      }
+      return success;
+    },
+    [
+      deleteTarget,
+      deleteContext,
+      softDeleteBranch,
+      deletePersonOnly,
+      fetchAll,
+      t,
+    ]
+  );
 
   if (authLoading || dataLoading) {
     return (
@@ -278,10 +314,14 @@ function TreeApp() {
         onSubmit={handleEditSubmit}
       />
       <DeleteConfirmDialog
+        key={deleteTarget?.id ?? 'delete-dialog'}
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setDeleteContext(null);
+        }}
         person={deleteTarget}
-        descendantCount={deleteDescendantCount}
+        deleteContext={deleteContext}
         onConfirm={handleDeleteConfirm}
       />
     </div>

@@ -3,11 +3,61 @@
 import { useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useTreeStore } from '@/store/tree-store';
-import type { Person, PersonFormData } from '@/types';
+import type { DeleteContext, DeleteOnlyMode, Person, PersonFormData } from '@/types';
 import { toast } from 'sonner';
 
 export function usePersons() {
     const supabase = useMemo(() => createClient(), []);
+
+    const getLineageIds = useCallback((): Set<string> => {
+        const state = useTreeStore.getState();
+        const lineage = new Set<string>();
+        if (!state.rootPersonId) return lineage;
+
+        const queue = [state.rootPersonId];
+        while (queue.length > 0) {
+            const personId = queue.shift()!;
+            if (lineage.has(personId)) continue;
+
+            const person = state.persons.find((p) => p.id === personId);
+            if (!person || person.deleted) continue;
+
+            lineage.add(personId);
+
+            // Follow children only — spouses are collateral, not lineage nodes.
+            const personUnions = state.unions.filter(
+                (union) =>
+                    union.partner1_id === personId ||
+                    union.partner2_id === personId
+            );
+            for (const union of personUnions) {
+                for (const link of state.unionChildren) {
+                    if (link.union_id !== union.id) continue;
+                    const child = state.persons.find((p) => p.id === link.child_id);
+                    if (child && !child.deleted && !lineage.has(child.id)) {
+                        queue.push(child.id);
+                    }
+                }
+            }
+        }
+
+        return lineage;
+    }, []);
+
+    const hasDirectChildren = useCallback((personId: string): boolean => {
+        const state = useTreeStore.getState();
+        const personUnions = state.unions.filter(
+            (union) =>
+                union.partner1_id === personId || union.partner2_id === personId
+        );
+        return personUnions.some((union) =>
+            state.unionChildren.some((link) => {
+                if (link.union_id !== union.id) return false;
+                const child = state.persons.find((p) => p.id === link.child_id);
+                return Boolean(child && !child.deleted);
+            })
+        );
+    }, []);
 
     const fetchAll = useCallback(async () => {
         const [personsRes, unionsRes, ucRes, configRes] = await Promise.all([
@@ -101,6 +151,34 @@ export function usePersons() {
         []
     );
 
+    const getDeleteContext = useCallback(
+        (personId: string): DeleteContext => {
+            const state = useTreeStore.getState();
+            const lineageIds = getLineageIds();
+            const isRoot = state.rootPersonId === personId;
+            const isLineageMember = lineageIds.has(personId);
+            const branching = hasDirectChildren(personId);
+            const isBranchingParent = isLineageMember && branching;
+            const descendantCount = getDescendantCount(personId);
+            const deleteOnlyMode: DeleteOnlyMode =
+                isBranchingParent && !isRoot ? 'lineage' : 'spouse';
+
+            return {
+                personId,
+                isRoot,
+                isLineageMember,
+                isBranchingParent,
+                // Root has no grandparents to receive children, so single-delete
+                // is disabled and only whole-branch deletion remains.
+                canDeleteOnly: !isRoot,
+                canDeleteBranch: isRoot || isBranchingParent,
+                deleteOnlyMode,
+                descendantCount,
+            };
+        },
+        [getDescendantCount, getLineageIds, hasDirectChildren]
+    );
+
     const softDeleteBranch = useCallback(
         async (personId: string): Promise<boolean> => {
             const state = useTreeStore.getState();
@@ -146,6 +224,27 @@ export function usePersons() {
             return true;
         },
         [supabase]
+    );
+
+    const deletePersonOnly = useCallback(
+        async (
+            personId: string,
+            deleteMode: DeleteOnlyMode
+        ): Promise<boolean> => {
+            const { error } = await supabase.rpc('delete_person_only', {
+                target_person_id: personId,
+                delete_mode: deleteMode,
+            });
+
+            if (error) {
+                toast.error(error.message);
+                return false;
+            }
+
+            await fetchAll();
+            return true;
+        },
+        [fetchAll, supabase]
     );
 
     const insertPersonInMiddle = useCallback(
@@ -197,8 +296,10 @@ export function usePersons() {
         createPerson,
         editPerson,
         softDeleteBranch,
+        deletePersonOnly,
         insertPersonInMiddle,
         getDescendantCount,
+        getDeleteContext,
         setRootPerson,
     };
 }

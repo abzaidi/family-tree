@@ -35,6 +35,8 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
    which fixes the persons SELECT policy so editors can soft-delete nodes.
 9. Run `migrations/supabase-insert-person-middle.sql` once to enable the atomic
    missing-generation insertion feature.
+10. Run `migrations/supabase-delete-person-only.sql` once to enable deleting a
+    person from the middle of the tree while preserving their descendants.
 
 ### 2. Environment Configuration
 1. Rename/copy `.env.local.example` to `.env.local`:
