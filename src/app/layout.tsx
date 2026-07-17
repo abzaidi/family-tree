@@ -25,7 +25,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full font-sans antialiased">{children}</body>
+      {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla) inject attributes into <body> before React hydrates */}
+      <body className="min-h-full font-sans antialiased" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

@@ -5,7 +5,6 @@ import {
     ReactFlow,
     Background,
     Controls,
-    MiniMap,
     useReactFlow,
     type NodeTypes,
     BackgroundVariant,
@@ -130,17 +129,6 @@ function FamilyCanvasInner() {
                 <Controls
                     showInteractive={false}
                     className="!bg-white !border !border-gray-200 !rounded-xl !shadow-lg"
-                />
-                <MiniMap
-                    className="!bg-white !border !border-gray-200 !rounded-xl !shadow-lg"
-                    maskColor="rgba(0, 0, 0, 0.08)"
-                    nodeColor={(node) => {
-                        if (node.type === 'union') return '#d8b4fe';
-                        const person = (node.data as { person?: { gender?: string } })?.person;
-                        return person?.gender === 'female' ? '#fbb6ce' : '#93c5fd';
-                    }}
-                    pannable
-                    zoomable
                 />
             </ReactFlow>
         </div>

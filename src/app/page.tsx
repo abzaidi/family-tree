@@ -167,11 +167,6 @@ function TreeApp() {
     }
   }, [deleteTarget, softDeleteBranch, t]);
 
-  const handleFitScreen = useCallback(() => {
-    // This will be handled through a custom event
-    window.dispatchEvent(new CustomEvent('fit-screen'));
-  }, []);
-
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -193,7 +188,7 @@ function TreeApp() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <Navbar onFitScreen={handleFitScreen} />
+      <Navbar />
 
       <main className="flex-1 relative mt-14">
         {hasRoot ? (
@@ -237,7 +232,7 @@ function TreeApp() {
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
-            className="absolute bottom-48 right-6 z-40"
+            className="absolute bottom-6 right-6 z-40"
           >
             <Button
               size="lg"

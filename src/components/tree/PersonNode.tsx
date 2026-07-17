@@ -53,7 +53,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
             <Handle
                 type="target"
                 position={Position.Top}
-                className="!w-3 !h-1 !bg-transparent !border-0 !min-h-0"
+                className="!w-3 !h-1 !bg-transparent !border-0 !min-h-0 !pointer-events-none"
                 id="top"
             />
             <motion.div
@@ -136,7 +136,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
             <Handle
                 type="source"
                 position={Position.Bottom}
-                className="!w-3 !h-1 !bg-transparent !border-0 !min-h-0"
+                className="!w-3 !h-1 !bg-transparent !border-0 !min-h-0 !pointer-events-none"
                 id="bottom"
             />
         </>

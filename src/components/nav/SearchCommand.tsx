@@ -21,7 +21,6 @@ export function SearchCommand() {
         unions,
         unionChildren,
         rootPersonId,
-        selectPerson,
         expandNodes,
     } =
         useTreeStore();
@@ -101,7 +100,6 @@ export function SearchCommand() {
             };
 
             expandNodes([...findExpansionPath(), personId]);
-            selectPerson(personId);
             setSearchOpen(false);
             setQuery('');
             window.dispatchEvent(
@@ -113,7 +111,6 @@ export function SearchCommand() {
             unions,
             unionChildren,
             expandNodes,
-            selectPerson,
             setSearchOpen,
         ]
     );

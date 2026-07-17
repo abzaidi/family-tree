@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
     Search,
-    Maximize,
     ChevronsDownUp,
     ChevronsUpDown,
     TreePine,
@@ -14,11 +13,7 @@ import { UserMenu } from './UserMenu';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 
-interface NavbarProps {
-    onFitScreen: () => void;
-}
-
-export function Navbar({ onFitScreen }: NavbarProps) {
+export function Navbar() {
     const { setSearchOpen, expandAll, collapseAll } = useTreeStore();
     const { t } = useI18n();
 
@@ -59,16 +54,6 @@ export function Navbar({ onFitScreen }: NavbarProps) {
                         aria-label={t('nav.search')}
                     >
                         <Search className="w-4 h-4" />
-                    </Button>
-
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onFitScreen}
-                        aria-label={t('nav.fitScreen')}
-                        title={t('nav.fitScreen')}
-                    >
-                        <Maximize className="w-4 h-4" />
                     </Button>
 
                     <Button
