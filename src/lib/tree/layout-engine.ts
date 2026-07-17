@@ -77,14 +77,20 @@ export function buildTreeLayout(
                 return child && !child.deleted;
             });
 
-            let unionWidth = COUPLE_WIDTH;
+            // A single parent without a living spouse only needs their own
+            // node width, not the full couple footprint.
+            const spouseId = getSpouseId(union, personId);
+            const spouse = spouseId ? personMap.get(spouseId) : null;
+            const baseWidth = spouse && !spouse.deleted ? COUPLE_WIDTH : NODE_WIDTH;
+
+            let unionWidth = baseWidth;
             if (children.length > 0) {
                 let childrenWidth = 0;
                 for (const childId of children) {
                     if (childrenWidth > 0) childrenWidth += H_GAP;
                     childrenWidth += calcSubtreeWidth(childId, new Set(visited));
                 }
-                unionWidth = Math.max(childrenWidth, COUPLE_WIDTH);
+                unionWidth = Math.max(childrenWidth, baseWidth);
             }
             if (totalWidth > 0) totalWidth += H_GAP;
             totalWidth += unionWidth;
@@ -147,8 +153,10 @@ export function buildTreeLayout(
                 });
             }
 
-            // Single Union Couple spacing
-            const primaryX = centerX - SPOUSE_GAP / 2;
+            // Single Union spacing: only offset for the spouse slot when a
+            // spouse is actually rendered; a single parent stays centered
+            // directly above their union dot and children.
+            const primaryX = renderSpouse ? centerX - SPOUSE_GAP / 2 : centerX;
             const spouseX = centerX + SPOUSE_GAP / 2;
             const unionDotX = centerX;
             const unionNodeY = y + NODE_HEIGHT + 35;
