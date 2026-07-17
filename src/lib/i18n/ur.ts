@@ -51,12 +51,17 @@ export const ur: TranslationStrings = {
     // Person
     'person.englishName': 'انگریزی نام',
     'person.urduName': 'اردو نام',
+    'person.englishNamePlaceholder': 'English name',
+    'person.urduNamePlaceholder': 'اردو نام',
     'person.gender': 'جنس',
     'person.male': 'مرد',
     'person.female': 'عورت',
     'person.other': 'دیگر',
+    'person.otherOption': 'دیگر',
+    'person.enterManually': 'اپنی قدر خود درج کریں',
     'person.birthYear': 'سالِ پیدائش',
     'person.deathYear': 'سالِ وفات',
+    'person.yearPlaceholder': 'مثلاً 1950',
     'person.notes': 'نوٹس',
     'person.parents': 'والدین',
     'person.siblings': 'بہن بھائی',
@@ -64,6 +69,26 @@ export const ur: TranslationStrings = {
     'person.children': 'اولاد',
     'person.born': 'پیدائش',
     'person.died': 'وفات',
+    'person.serialNumber': 'سیریل نمبر',
+    'person.country': 'ملک',
+    'person.stateProvince': 'صوبہ / ریاست',
+    'person.city': 'شہر',
+    'person.countryCode': 'ملک کا کوڈ',
+    'person.countryCodeAuto': 'ملک سے خود بخود بھرا جاتا ہے',
+    'person.nationalId': 'قومی شناختی کارڈ نمبر',
+    'person.nationalIdPlaceholder': 'شناختی نمبر درج کریں',
+    'person.location': 'مقام',
+    'person.countryPlaceholder': 'ملک منتخب کریں',
+    'person.countrySearch': 'ممالک تلاش کریں...',
+    'person.statePlaceholder': 'صوبہ / ریاست منتخب کریں',
+    'person.stateSearch': 'صوبے تلاش کریں...',
+    'person.cityPlaceholder': 'شہر منتخب کریں',
+    'person.citySearch': 'شہر تلاش کریں...',
+    'person.customStatePlaceholder': 'صوبہ / ریاست درج کریں',
+    'person.customCityPlaceholder': 'شہر درج کریں',
+    'person.selectCountryFirst': 'پہلے ملک منتخب کریں',
+    'person.selectStateFirst': 'پہلے صوبہ منتخب کریں',
+    'person.nameRequired': 'کم از کم ایک نام درکار ہے',
 
     // Actions
     'action.add': 'شامل کریں',
@@ -111,8 +136,14 @@ export const ur: TranslationStrings = {
 
     // Search
     'search.title': 'خاندانی شجرے میں تلاش کریں',
-    'search.placeholder': 'نام ٹائپ کریں...',
+    'search.placeholder': 'نام یا سیریل سے تلاش کریں...',
     'search.noResults': 'کوئی نتائج نہیں ملے',
+
+    // Family statistics
+    'stats.title': 'خاندان',
+    'stats.total': 'کل',
+    'stats.males': 'مرد',
+    'stats.females': 'عورتیں',
 
     // States
     'state.loading': 'لوڈ ہو رہا ہے...',

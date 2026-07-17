@@ -3,7 +3,7 @@ import type { Node, Edge } from '@xyflow/react';
 
 // Layout Constants
 const NODE_WIDTH = 260;
-const NODE_HEIGHT = 110;
+const NODE_HEIGHT = 120;
 const UNION_NODE_SIZE = 24;
 const H_GAP = 80;
 const V_GAP = 140;

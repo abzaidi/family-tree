@@ -2,8 +2,14 @@
 -- Insert a missing generation between a direct parent and child
 -- =============================================================================
 -- Run this once in the Supabase SQL Editor for existing projects.
+-- Prefer migrations/supabase-person-profile-fields.sql on upgraded databases:
+-- that migration already includes this RPC with profile/private fields.
 -- The entire relationship rewrite happens in one transaction.
 -- =============================================================================
+
+DROP FUNCTION IF EXISTS public.insert_person_in_middle(
+  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT
+);
 
 CREATE OR REPLACE FUNCTION public.insert_person_in_middle(
   selected_parent_id UUID,
@@ -13,7 +19,14 @@ CREATE OR REPLACE FUNCTION public.insert_person_in_middle(
   new_gender public.gender_type,
   new_birth_year INTEGER DEFAULT NULL,
   new_death_year INTEGER DEFAULT NULL,
-  new_notes TEXT DEFAULT NULL
+  new_notes TEXT DEFAULT NULL,
+  new_country_iso_code TEXT DEFAULT NULL,
+  new_country_name TEXT DEFAULT NULL,
+  new_state_province_code TEXT DEFAULT NULL,
+  new_state_province TEXT DEFAULT NULL,
+  new_city_name TEXT DEFAULT NULL,
+  new_phone_country_code TEXT DEFAULT NULL,
+  new_national_identity_number TEXT DEFAULT NULL
 )
 RETURNS public.persons
 LANGUAGE plpgsql
@@ -75,7 +88,13 @@ BEGIN
     gender,
     birth_year,
     death_year,
-    notes
+    notes,
+    country_iso_code,
+    country_name,
+    state_province_code,
+    state_province,
+    city_name,
+    phone_country_code
   )
   VALUES (
     COALESCE(BTRIM(new_english_name), ''),
@@ -83,9 +102,26 @@ BEGIN
     new_gender,
     new_birth_year,
     new_death_year,
-    NULLIF(BTRIM(new_notes), '')
+    NULLIF(BTRIM(new_notes), ''),
+    NULLIF(BTRIM(new_country_iso_code), ''),
+    NULLIF(BTRIM(new_country_name), ''),
+    NULLIF(BTRIM(new_state_province_code), ''),
+    NULLIF(BTRIM(new_state_province), ''),
+    NULLIF(BTRIM(new_city_name), ''),
+    NULLIF(BTRIM(new_phone_country_code), '')
   )
   RETURNING * INTO inserted_person;
+
+  IF NULLIF(BTRIM(new_national_identity_number), '') IS NOT NULL THEN
+    INSERT INTO public.person_private_details (
+      person_id,
+      national_identity_number
+    )
+    VALUES (
+      inserted_person.id,
+      BTRIM(new_national_identity_number)
+    );
+  END IF;
 
   -- The selected child now belongs to a new single-parent union headed by the
   -- inserted person. Existing spouse/child unions of that child are untouched.
@@ -107,9 +143,11 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.insert_person_in_middle(
-  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT
+  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT,
+  TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
 ) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION public.insert_person_in_middle(
-  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT
+  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT,
+  TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
 ) TO authenticated;

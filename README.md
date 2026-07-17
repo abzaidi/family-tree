@@ -16,7 +16,9 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
 1. Log into your [Supabase Dashboard](https://supabase.com).
 2. Create a new project.
 3. Open the **SQL Editor** in the dashboard and run the entire contents of the `migrations/supabase-schema.sql` file provided in this repository. 
-   - This sets up the schema tables: `persons`, `unions`, `union_children`, `user_roles`, `audit_log`, and `app_config`, along with indices, audit log triggers, and helper permissions.
+   - This sets up the schema tables: `persons`, `person_private_details`,
+     `unions`, `union_children`, `user_roles`, `audit_log`, and `app_config`,
+     along with indices, audit log triggers, and helper permissions.
 4. Execute the following command for your admin user UUID to grant edit permissions:
    ```sql
    INSERT INTO user_roles (user_id, role)
@@ -37,6 +39,10 @@ An interactive, responsive, and bilingual (English/Urdu) Family Tree explorer we
    missing-generation insertion feature.
 10. Run `migrations/supabase-delete-person-only.sql` once to enable deleting a
     person from the middle of the tree while preserving their descendants.
+11. Run `migrations/supabase-person-profile-fields.sql` once to add serial
+    numbers, location/profile fields, editor-only national identity storage,
+    and the updated middle-insertion RPC. Fresh installs that used the current
+    `supabase-schema.sql` already include these columns and policies.
 
 ### 2. Environment Configuration
 1. Rename/copy `.env.local.example` to `.env.local`:

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Plus, Minus, User, Heart } from 'lucide-react';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
+import { formatSerialNumber } from '@/lib/person/format';
 import type { Person } from '@/types';
 
 interface PersonNodeData {
@@ -42,6 +43,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
     );
 
     const displayName = getPersonName(person.english_name, person.urdu_name);
+    const serial = formatSerialNumber(person.serial_number);
     const isFemale = person.gender === 'female';
     const yearRange =
         person.birth_year || person.death_year
@@ -85,7 +87,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                     relative cursor-pointer select-none
                     rounded-2xl border-2 bg-card shadow-lg
                     transition-colors duration-200
-                    w-[260px] h-[110px]
+                    w-[260px] h-[120px]
                     ${isFemale
                         ? 'border-pink-200 hover:border-pink-400 hover:shadow-pink-100 dark:border-pink-800 dark:hover:border-pink-500 dark:hover:shadow-pink-950/40'
                         : 'border-blue-200 hover:border-blue-400 hover:shadow-blue-100 dark:border-blue-800 dark:hover:border-blue-500 dark:hover:shadow-blue-950/40'
@@ -121,23 +123,30 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                                 <User className="w-4 h-4" />
                             )}
                         </div>
-                        <span
-                            className={`min-w-0 flex-1 font-semibold text-foreground break-words ${
-                                locale === 'ur'
-                                    ? 'font-urdu text-[14px] leading-[2.25] pb-1 overflow-visible'
-                                    : 'line-clamp-2 text-[15px] leading-snug'
-                            }`}
-                            dir={locale === 'ur' ? 'rtl' : 'ltr'}
-                            style={{ wordBreak: 'break-word' }}
-                        >
-                            {displayName}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                            <span
+                                className={`block font-semibold text-foreground break-words ${
+                                    locale === 'ur'
+                                        ? 'font-urdu text-[14px] leading-[2.1] pb-0.5 overflow-visible'
+                                        : 'line-clamp-2 text-[15px] leading-snug'
+                                }`}
+                                dir={locale === 'ur' ? 'rtl' : 'ltr'}
+                                style={{ wordBreak: 'break-word' }}
+                            >
+                                {displayName}
+                            </span>
+                            {serial && (
+                                <p className="text-[11px] font-medium text-muted-foreground tracking-wide">
+                                    {serial}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Year range */}
                     {yearRange && (
                         <p className={`text-xs text-muted-foreground pl-10 ${
-                            locale === 'ur' ? 'mt-0' : 'mt-1.5'
+                            locale === 'ur' ? 'mt-0' : 'mt-0.5'
                         }`}>{yearRange}</p>
                     )}
                 </div>

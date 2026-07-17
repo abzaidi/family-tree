@@ -40,7 +40,10 @@ export async function middleware(request: NextRequest) {
     const isAuthPage =
         request.nextUrl.pathname === '/login' ||
         request.nextUrl.pathname === '/signup';
-    const isPublicPage = request.nextUrl.pathname === '/';
+    const isPublicPage =
+        request.nextUrl.pathname === '/' ||
+        // Public read-only geographic reference data
+        request.nextUrl.pathname.startsWith('/api/locations/');
 
     if (!user && !isAuthPage && !isPublicPage) {
         const url = request.nextUrl.clone();

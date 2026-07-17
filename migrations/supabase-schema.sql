@@ -18,14 +18,24 @@ CREATE TYPE audit_action_type AS ENUM ('create', 'update', 'delete', 'restore');
 -- ========================
 
 -- Persons table
+CREATE SEQUENCE persons_serial_number_seq;
+
 CREATE TABLE persons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  serial_number BIGINT NOT NULL DEFAULT nextval('persons_serial_number_seq')
+    UNIQUE,
   english_name TEXT NOT NULL DEFAULT '',
   urdu_name TEXT NOT NULL DEFAULT '',
   gender gender_type NOT NULL DEFAULT 'male',
   birth_year INTEGER,
   death_year INTEGER,
   notes TEXT,
+  country_iso_code TEXT,
+  country_name TEXT,
+  state_province_code TEXT,
+  state_province TEXT,
+  city_name TEXT,
+  phone_country_code TEXT,
   deleted BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -33,6 +43,17 @@ CREATE TABLE persons (
   CONSTRAINT check_valid_years CHECK (
     (birth_year IS NULL OR death_year IS NULL) OR (death_year >= birth_year)
   )
+);
+
+ALTER SEQUENCE persons_serial_number_seq OWNED BY persons.serial_number;
+
+-- Editor-only private identity details (id kept for shared audit trigger)
+CREATE TABLE person_private_details (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  person_id UUID NOT NULL UNIQUE REFERENCES persons(id) ON DELETE CASCADE,
+  national_identity_number TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Unions (marriages/partnerships)
@@ -94,10 +115,16 @@ CREATE TABLE app_config (
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE INDEX idx_persons_deleted ON persons(deleted);
+CREATE INDEX idx_persons_serial_number ON persons(serial_number);
 CREATE INDEX idx_persons_english_name ON persons(english_name);
 CREATE INDEX idx_persons_urdu_name ON persons(urdu_name);
 CREATE INDEX idx_persons_english_name_trgm ON persons USING gin (english_name gin_trgm_ops);
 CREATE INDEX idx_persons_urdu_name_trgm ON persons USING gin (urdu_name gin_trgm_ops);
+CREATE INDEX idx_persons_country_iso_code ON persons(country_iso_code);
+CREATE INDEX idx_persons_state_province ON persons(state_province);
+CREATE INDEX idx_persons_city_name ON persons(city_name);
+CREATE INDEX idx_person_private_details_nic
+  ON person_private_details(national_identity_number);
 
 CREATE INDEX idx_unions_partner1 ON unions(partner1_id);
 CREATE INDEX idx_unions_partner2 ON unions(partner2_id);
@@ -217,6 +244,11 @@ CREATE TRIGGER set_updated_at_app_config
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER set_updated_at_person_private_details
+  BEFORE UPDATE ON person_private_details
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at();
+
 -- Audit log triggers
 CREATE TRIGGER audit_persons
   AFTER INSERT OR UPDATE OR DELETE ON persons
@@ -233,11 +265,17 @@ CREATE TRIGGER audit_union_children
   FOR EACH ROW
   EXECUTE FUNCTION log_audit();
 
+CREATE TRIGGER audit_person_private_details
+  AFTER INSERT OR UPDATE OR DELETE ON person_private_details
+  FOR EACH ROW
+  EXECUTE FUNCTION log_audit();
+
 -- ========================
 -- 6. ROW LEVEL SECURITY
 -- ========================
 
 ALTER TABLE persons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE person_private_details ENABLE ROW LEVEL SECURITY;
 ALTER TABLE unions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE union_children ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
@@ -269,6 +307,28 @@ CREATE POLICY "Admins can delete persons"
   ON persons FOR DELETE
   TO authenticated
   USING (is_admin(auth.uid()));
+
+-- PRIVATE DETAILS policies (editors/admins only; never public)
+CREATE POLICY "Editors and admins can view private details"
+  ON person_private_details FOR SELECT
+  TO authenticated
+  USING (can_edit(auth.uid()));
+
+CREATE POLICY "Editors and admins can insert private details"
+  ON person_private_details FOR INSERT
+  TO authenticated
+  WITH CHECK (can_edit(auth.uid()));
+
+CREATE POLICY "Editors and admins can update private details"
+  ON person_private_details FOR UPDATE
+  TO authenticated
+  USING (can_edit(auth.uid()))
+  WITH CHECK (can_edit(auth.uid()));
+
+CREATE POLICY "Editors and admins can delete private details"
+  ON person_private_details FOR DELETE
+  TO authenticated
+  USING (can_edit(auth.uid()));
 
 -- UNIONS policies
 CREATE POLICY "Anyone can view unions"
@@ -374,7 +434,14 @@ CREATE OR REPLACE FUNCTION public.insert_person_in_middle(
   new_gender public.gender_type,
   new_birth_year INTEGER DEFAULT NULL,
   new_death_year INTEGER DEFAULT NULL,
-  new_notes TEXT DEFAULT NULL
+  new_notes TEXT DEFAULT NULL,
+  new_country_iso_code TEXT DEFAULT NULL,
+  new_country_name TEXT DEFAULT NULL,
+  new_state_province_code TEXT DEFAULT NULL,
+  new_state_province TEXT DEFAULT NULL,
+  new_city_name TEXT DEFAULT NULL,
+  new_phone_country_code TEXT DEFAULT NULL,
+  new_national_identity_number TEXT DEFAULT NULL
 )
 RETURNS public.persons
 LANGUAGE plpgsql
@@ -429,7 +496,18 @@ BEGIN
   END IF;
 
   INSERT INTO public.persons (
-    english_name, urdu_name, gender, birth_year, death_year, notes
+    english_name,
+    urdu_name,
+    gender,
+    birth_year,
+    death_year,
+    notes,
+    country_iso_code,
+    country_name,
+    state_province_code,
+    state_province,
+    city_name,
+    phone_country_code
   )
   VALUES (
     COALESCE(BTRIM(new_english_name), ''),
@@ -437,9 +515,26 @@ BEGIN
     new_gender,
     new_birth_year,
     new_death_year,
-    NULLIF(BTRIM(new_notes), '')
+    NULLIF(BTRIM(new_notes), ''),
+    NULLIF(BTRIM(new_country_iso_code), ''),
+    NULLIF(BTRIM(new_country_name), ''),
+    NULLIF(BTRIM(new_state_province_code), ''),
+    NULLIF(BTRIM(new_state_province), ''),
+    NULLIF(BTRIM(new_city_name), ''),
+    NULLIF(BTRIM(new_phone_country_code), '')
   )
   RETURNING * INTO inserted_person;
+
+  IF NULLIF(BTRIM(new_national_identity_number), '') IS NOT NULL THEN
+    INSERT INTO public.person_private_details (
+      person_id,
+      national_identity_number
+    )
+    VALUES (
+      inserted_person.id,
+      BTRIM(new_national_identity_number)
+    );
+  END IF;
 
   INSERT INTO public.unions (partner1_id, partner2_id)
   VALUES (inserted_person.id, NULL)
@@ -457,10 +552,12 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.insert_person_in_middle(
-  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT
+  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT,
+  TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
 ) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.insert_person_in_middle(
-  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT
+  UUID, UUID, TEXT, TEXT, public.gender_type, INTEGER, INTEGER, TEXT,
+  TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
 ) TO authenticated;
 
 -- Soft-delete one person while preserving descendants.

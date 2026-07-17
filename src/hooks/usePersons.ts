@@ -2,9 +2,61 @@
 
 import { useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { toPublicPersonInsert } from '@/lib/person/format';
 import { useTreeStore } from '@/store/tree-store';
-import type { DeleteContext, DeleteOnlyMode, Person, PersonFormData } from '@/types';
+import type {
+    DeleteContext,
+    DeleteOnlyMode,
+    Person,
+    PersonFormData,
+    PersonPrivateDetails,
+} from '@/types';
 import { toast } from 'sonner';
+
+function mergePrivateDetails(
+    persons: Person[],
+    privateDetails: PersonPrivateDetails[] | null | undefined
+): Person[] {
+    if (!privateDetails?.length) return persons;
+    const byPersonId = new Map(
+        privateDetails.map((detail) => [detail.person_id, detail])
+    );
+    return persons.map((person) => {
+        const detail = byPersonId.get(person.id);
+        return detail
+            ? {
+                  ...person,
+                  national_identity_number: detail.national_identity_number,
+              }
+            : person;
+    });
+}
+
+async function upsertPrivateDetails(
+    supabase: ReturnType<typeof createClient>,
+    personId: string,
+    nationalIdentityNumber: string | null | undefined
+): Promise<string | null> {
+    const normalized = nationalIdentityNumber?.trim() || null;
+
+    if (!normalized) {
+        const { error } = await supabase
+            .from('person_private_details')
+            .delete()
+            .eq('person_id', personId);
+        return error?.message ?? null;
+    }
+
+    const { error } = await supabase.from('person_private_details').upsert(
+        {
+            person_id: personId,
+            national_identity_number: normalized,
+            updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'person_id' }
+    );
+    return error?.message ?? null;
+}
 
 export function usePersons() {
     const supabase = useMemo(() => createClient(), []);
@@ -24,7 +76,6 @@ export function usePersons() {
 
             lineage.add(personId);
 
-            // Follow children only — spouses are collateral, not lineage nodes.
             const personUnions = state.unions.filter(
                 (union) =>
                     union.partner1_id === personId ||
@@ -60,31 +111,46 @@ export function usePersons() {
     }, []);
 
     const fetchAll = useCallback(async () => {
-        const [personsRes, unionsRes, ucRes, configRes] = await Promise.all([
-            supabase.from('persons').select('*').eq('deleted', false).order('created_at'),
-            supabase.from('unions').select('*'),
-            supabase.from('union_children').select('*'),
-            supabase.from('app_config').select('*').eq('key', 'root_person_id').single(),
-        ]);
+        const [personsRes, unionsRes, ucRes, configRes, privateRes] =
+            await Promise.all([
+                supabase
+                    .from('persons')
+                    .select('*')
+                    .eq('deleted', false)
+                    .order('created_at'),
+                supabase.from('unions').select('*'),
+                supabase.from('union_children').select('*'),
+                supabase
+                    .from('app_config')
+                    .select('*')
+                    .eq('key', 'root_person_id')
+                    .single(),
+                // RLS returns rows only for editors/admins; viewers get [].
+                supabase.from('person_private_details').select('*'),
+            ]);
 
-        if (personsRes.data) useTreeStore.getState().setPersons(personsRes.data);
+        if (personsRes.data) {
+            useTreeStore
+                .getState()
+                .setPersons(
+                    mergePrivateDetails(
+                        personsRes.data as Person[],
+                        privateRes.data as PersonPrivateDetails[] | null
+                    )
+                );
+        }
         if (unionsRes.data) useTreeStore.getState().setUnions(unionsRes.data);
         if (ucRes.data) useTreeStore.getState().setUnionChildren(ucRes.data);
-        if (configRes.data) useTreeStore.getState().setRootPersonId(configRes.data.value);
+        if (configRes.data) {
+            useTreeStore.getState().setRootPersonId(configRes.data.value);
+        }
     }, [supabase]);
 
     const createPerson = useCallback(
         async (data: PersonFormData): Promise<Person | null> => {
             const { data: person, error } = await supabase
                 .from('persons')
-                .insert({
-                    english_name: data.english_name,
-                    urdu_name: data.urdu_name,
-                    gender: data.gender,
-                    birth_year: data.birth_year,
-                    death_year: data.death_year,
-                    notes: data.notes || null,
-                })
+                .insert(toPublicPersonInsert(data))
                 .select()
                 .single();
 
@@ -92,17 +158,73 @@ export function usePersons() {
                 toast.error(error.message);
                 return null;
             }
-            useTreeStore.getState().addPerson(person);
-            return person;
+
+            const privateError = await upsertPrivateDetails(
+                supabase,
+                person.id,
+                data.national_identity_number
+            );
+            if (privateError) {
+                toast.error(privateError);
+            }
+
+            const merged: Person = {
+                ...(person as Person),
+                national_identity_number:
+                    data.national_identity_number.trim() || null,
+            };
+            useTreeStore.getState().addPerson(merged);
+            return merged;
         },
         [supabase]
     );
 
     const editPerson = useCallback(
         async (id: string, data: Partial<PersonFormData>): Promise<boolean> => {
+            const publicPatch: Record<string, unknown> = {
+                updated_at: new Date().toISOString(),
+            };
+
+            const publicKeys: (keyof PersonFormData)[] = [
+                'english_name',
+                'urdu_name',
+                'gender',
+                'birth_year',
+                'death_year',
+                'notes',
+                'country_iso_code',
+                'country_name',
+                'state_province_code',
+                'state_province',
+                'city_name',
+                'phone_country_code',
+            ];
+
+            for (const key of publicKeys) {
+                if (key in data) {
+                    const value = data[key];
+                    if (
+                        key === 'notes' ||
+                        key === 'country_iso_code' ||
+                        key === 'country_name' ||
+                        key === 'state_province_code' ||
+                        key === 'state_province' ||
+                        key === 'city_name' ||
+                        key === 'phone_country_code'
+                    ) {
+                        publicPatch[key] =
+                            typeof value === 'string' && value.trim() === ''
+                                ? null
+                                : value || null;
+                    } else {
+                        publicPatch[key] = value;
+                    }
+                }
+            }
+
             const { data: person, error } = await supabase
                 .from('persons')
-                .update({ ...data, updated_at: new Date().toISOString() })
+                .update(publicPatch)
                 .eq('id', id)
                 .select()
                 .single();
@@ -111,45 +233,63 @@ export function usePersons() {
                 toast.error(error.message);
                 return false;
             }
-            useTreeStore.getState().updatePerson(person);
+
+            let nationalIdentity = useTreeStore
+                .getState()
+                .persons.find((p) => p.id === id)?.national_identity_number;
+
+            if ('national_identity_number' in data) {
+                const privateError = await upsertPrivateDetails(
+                    supabase,
+                    id,
+                    data.national_identity_number
+                );
+                if (privateError) {
+                    toast.error(privateError);
+                    return false;
+                }
+                nationalIdentity = data.national_identity_number?.trim() || null;
+            }
+
+            useTreeStore.getState().updatePerson({
+                ...(person as Person),
+                national_identity_number: nationalIdentity ?? null,
+            });
             return true;
         },
         [supabase]
     );
 
-    const getDescendantCount = useCallback(
-        (personId: string): number => {
-            const state = useTreeStore.getState();
-            const visited = new Set<string>();
+    const getDescendantCount = useCallback((personId: string): number => {
+        const state = useTreeStore.getState();
+        const visited = new Set<string>();
 
-            const countDescendants = (pid: string): number => {
-                if (visited.has(pid)) return 0;
-                visited.add(pid);
+        const countDescendants = (pid: string): number => {
+            if (visited.has(pid)) return 0;
+            visited.add(pid);
 
-                let count = 0;
-                const personUnions = state.unions.filter(
-                    (u) => u.partner1_id === pid || u.partner2_id === pid
-                );
+            let count = 0;
+            const personUnions = state.unions.filter(
+                (u) => u.partner1_id === pid || u.partner2_id === pid
+            );
 
-                for (const union of personUnions) {
-                    const children = state.unionChildren
-                        .filter((uc) => uc.union_id === union.id)
-                        .map((uc) => uc.child_id);
+            for (const union of personUnions) {
+                const children = state.unionChildren
+                    .filter((uc) => uc.union_id === union.id)
+                    .map((uc) => uc.child_id);
 
-                    for (const childId of children) {
-                        const child = state.persons.find((p) => p.id === childId);
-                        if (child && !child.deleted) {
-                            count += 1 + countDescendants(childId);
-                        }
+                for (const childId of children) {
+                    const child = state.persons.find((p) => p.id === childId);
+                    if (child && !child.deleted) {
+                        count += 1 + countDescendants(childId);
                     }
                 }
-                return count;
-            };
+            }
+            return count;
+        };
 
-            return countDescendants(personId);
-        },
-        []
-    );
+        return countDescendants(personId);
+    }, []);
 
     const getDeleteContext = useCallback(
         (personId: string): DeleteContext => {
@@ -168,8 +308,6 @@ export function usePersons() {
                 isRoot,
                 isLineageMember,
                 isBranchingParent,
-                // Root has no grandparents to receive children, so single-delete
-                // is disabled and only whole-branch deletion remains.
                 canDeleteOnly: !isRoot,
                 canDeleteBranch: isRoot || isBranchingParent,
                 deleteOnlyMode,
@@ -262,6 +400,14 @@ export function usePersons() {
                 new_birth_year: data.birth_year,
                 new_death_year: data.death_year,
                 new_notes: data.notes || null,
+                new_country_iso_code: data.country_iso_code || null,
+                new_country_name: data.country_name || null,
+                new_state_province_code: data.state_province_code || null,
+                new_state_province: data.state_province || null,
+                new_city_name: data.city_name || null,
+                new_phone_country_code: data.phone_country_code || null,
+                new_national_identity_number:
+                    data.national_identity_number || null,
             });
 
             if (error) {

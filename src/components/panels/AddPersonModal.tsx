@@ -9,9 +9,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -19,86 +17,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Command,
-    CommandEmpty,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
-import { ChevronDown } from 'lucide-react';
+import { PersonCombobox } from '@/components/ui/person-combobox';
+import { PersonFormFields } from '@/components/panels/PersonFormFields';
 import { useI18n } from '@/lib/i18n/context';
+import { EMPTY_PERSON_FORM } from '@/lib/person/format';
 import { useTreeStore } from '@/store/tree-store';
-import type { Gender, Person, PersonFormData } from '@/types';
+import type { Person, PersonFormData } from '@/types';
 import { toast } from 'sonner';
 
 type AddMode = 'child' | 'spouse' | 'root' | 'insert';
-
-interface PersonComboboxProps {
-    persons: Person[];
-    value: string;
-    onChange: (personId: string) => void;
-    placeholder: string;
-    searchPlaceholder: string;
-    noResultsText: string;
-    getPersonName: (englishName: string, urduName: string) => string;
-}
-
-function PersonCombobox({
-    persons,
-    value,
-    onChange,
-    placeholder,
-    searchPlaceholder,
-    noResultsText,
-    getPersonName,
-}: PersonComboboxProps) {
-    const [open, setOpen] = useState(false);
-    const selected = persons.find((person) => person.id === value);
-
-    return (
-        <div className="space-y-1.5">
-            <button
-                type="button"
-                onClick={() => setOpen((current) => !current)}
-                aria-expanded={open}
-                className="flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-                <span className={selected ? 'truncate' : 'truncate text-muted-foreground'}>
-                    {selected
-                        ? getPersonName(selected.english_name, selected.urdu_name)
-                        : placeholder}
-                </span>
-                <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-            </button>
-            {open && (
-                <div className="rounded-lg border border-border bg-popover shadow-md">
-                    <Command>
-                        <CommandInput placeholder={searchPlaceholder} autoFocus />
-                        <CommandList className="max-h-40">
-                            <CommandEmpty>{noResultsText}</CommandEmpty>
-                            {persons.map((person) => (
-                                <CommandItem
-                                    key={person.id}
-                                    // Name + id keeps duplicate names distinct while
-                                    // still matching typed name text
-                                    value={`${person.english_name} ${person.urdu_name} ${person.id}`}
-                                    data-checked={person.id === value}
-                                    onSelect={() => {
-                                        onChange(person.id);
-                                        setOpen(false);
-                                    }}
-                                >
-                                    {getPersonName(person.english_name, person.urdu_name)}
-                                </CommandItem>
-                            ))}
-                        </CommandList>
-                    </Command>
-                </div>
-            )}
-        </div>
-    );
-}
 
 interface AddPersonModalProps {
     open: boolean;
@@ -125,49 +52,42 @@ export function AddPersonModal({
     const { t, getPersonName } = useI18n();
     const { unions, unionChildren, persons } = useTreeStore();
 
-    const [formData, setFormData] = useState<PersonFormData>({
-        english_name: '',
-        urdu_name: '',
-        gender: 'male',
-        birth_year: null,
-        death_year: null,
-        notes: '',
-    });
+    const [formData, setFormData] = useState<PersonFormData>(EMPTY_PERSON_FORM);
     const [selectedUnionId, setSelectedUnionId] = useState<string>('');
     const [selectedChildIds, setSelectedChildIds] = useState<string[]>([]);
     const [selectedParentId, setSelectedParentId] = useState('');
     const [selectedDirectChildId, setSelectedDirectChildId] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Get unions for the target person (needed for "Add Child" flow)
     const targetUnions =
         targetPerson && mode === 'child'
             ? unions.filter(
-                (u) =>
-                    u.partner1_id === targetPerson.id ||
-                    u.partner2_id === targetPerson.id
-            )
+                  (u) =>
+                      u.partner1_id === targetPerson.id ||
+                      u.partner2_id === targetPerson.id
+              )
             : [];
 
-    // Only children in this person's single-parent unions can be assigned to a
-    // newly added spouse. Children already belonging to a couple are excluded.
     const singleParentUnionIds = new Set(
         targetPerson && mode === 'spouse'
             ? unions
-                .filter(
-                    (union) =>
-                        union.partner1_id === targetPerson.id &&
-                        union.partner2_id === null
-                )
-                .map((union) => union.id)
+                  .filter(
+                      (union) =>
+                          union.partner1_id === targetPerson.id &&
+                          union.partner2_id === null
+                  )
+                  .map((union) => union.id)
             : []
     );
     const eligibleChildren =
         mode === 'spouse'
             ? unionChildren
-                .filter((link) => singleParentUnionIds.has(link.union_id))
-                .map((link) => persons.find((person) => person.id === link.child_id))
-                .filter((person): person is Person => Boolean(person && !person.deleted))
+                  .filter((link) => singleParentUnionIds.has(link.union_id))
+                  .map((link) => persons.find((person) => person.id === link.child_id))
+                  .filter(
+                      (person): person is Person =>
+                          Boolean(person && !person.deleted)
+                  )
             : [];
 
     const activePersons = persons.filter((person) => !person.deleted);
@@ -179,34 +99,32 @@ export function AddPersonModal({
         : undefined;
     const isDirectRelationship = Boolean(
         selectedParentId &&
-        selectedDirectChildId &&
-        selectedChildParentUnion &&
-        (
-            selectedChildParentUnion.partner1_id === selectedParentId ||
-            selectedChildParentUnion.partner2_id === selectedParentId
-        )
+            selectedDirectChildId &&
+            selectedChildParentUnion &&
+            (selectedChildParentUnion.partner1_id === selectedParentId ||
+                selectedChildParentUnion.partner2_id === selectedParentId)
     );
     const insertValidationError =
         mode !== 'insert' || !selectedParentId || !selectedDirectChildId
             ? null
             : selectedParentId === selectedDirectChildId
-                ? t('insert.samePersonError')
-                : !isDirectRelationship
-                    ? t('insert.notDirectError')
-                    : null;
+              ? t('insert.samePersonError')
+              : !isDirectRelationship
+                ? t('insert.notDirectError')
+                : null;
     const insertSelectionValid =
         mode !== 'insert' ||
         Boolean(
             selectedParentId &&
-            selectedDirectChildId &&
-            selectedParentId !== selectedDirectChildId &&
-            isDirectRelationship
+                selectedDirectChildId &&
+                selectedParentId !== selectedDirectChildId &&
+                isDirectRelationship
         );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.english_name && !formData.urdu_name) {
-            toast.error('At least one name is required');
+            toast.error(t('person.nameRequired'));
             return;
         }
         if (!insertSelectionValid) {
@@ -224,14 +142,7 @@ export function AddPersonModal({
                 selectedDirectChildId || undefined
             );
             if (!success) return;
-            setFormData({
-                english_name: '',
-                urdu_name: '',
-                gender: 'male',
-                birth_year: null,
-                death_year: null,
-                notes: '',
-            });
+            setFormData(EMPTY_PERSON_FORM);
             setSelectedUnionId('');
             setSelectedChildIds([]);
             setSelectedParentId('');
@@ -244,8 +155,6 @@ export function AddPersonModal({
         }
     };
 
-    // Base UI's Select renders the raw value (a UUID) unless display text is
-    // provided explicitly, so resolve union labels for the trigger ourselves
     const unionLabel = (unionId: string): string => {
         const union = targetUnions.find((u) => u.id === unionId);
         if (!union) return '';
@@ -270,39 +179,12 @@ export function AddPersonModal({
 
     return (
         <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className="sm:max-w-[460px]">
+            <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{t(titleMap[mode])}</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="english_name">{t('person.englishName')}</Label>
-                            <Input
-                                id="english_name"
-                                value={formData.english_name}
-                                onChange={(e) =>
-                                    setFormData((d) => ({ ...d, english_name: e.target.value }))
-                                }
-                                placeholder="English name"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="urdu_name">{t('person.urduName')}</Label>
-                            <Input
-                                id="urdu_name"
-                                value={formData.urdu_name}
-                                onChange={(e) =>
-                                    setFormData((d) => ({ ...d, urdu_name: e.target.value }))
-                                }
-                                placeholder="اردو نام"
-                                dir="rtl"
-                                className="font-urdu"
-                            />
-                        </div>
-                    </div>
-
                     {mode === 'insert' && (
                         <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-3">
                             <p className="text-sm text-muted-foreground">
@@ -343,61 +225,6 @@ export function AddPersonModal({
                         </div>
                     )}
 
-                    <div className="space-y-1.5">
-                        <Label>{t('person.gender')}</Label>
-                        <Select
-                            value={formData.gender}
-                            onValueChange={(v) =>
-                                v && setFormData((d) => ({ ...d, gender: v as Gender }))
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue>
-                                    {t(`person.${formData.gender}`)}
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="male">{t('person.male')}</SelectItem>
-                                <SelectItem value="female">{t('person.female')}</SelectItem>
-                                <SelectItem value="other">{t('person.other')}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="birth_year">{t('person.birthYear')}</Label>
-                            <Input
-                                id="birth_year"
-                                type="number"
-                                value={formData.birth_year ?? ''}
-                                onChange={(e) =>
-                                    setFormData((d) => ({
-                                        ...d,
-                                        birth_year: e.target.value ? Number(e.target.value) : null,
-                                    }))
-                                }
-                                placeholder="e.g. 1950"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="death_year">{t('person.deathYear')}</Label>
-                            <Input
-                                id="death_year"
-                                type="number"
-                                value={formData.death_year ?? ''}
-                                onChange={(e) =>
-                                    setFormData((d) => ({
-                                        ...d,
-                                        death_year: e.target.value ? Number(e.target.value) : null,
-                                    }))
-                                }
-                                placeholder="e.g. 2020"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Union selection for adding child */}
                     {mode === 'child' && targetUnions.length > 1 && (
                         <div className="space-y-1.5">
                             <Label>{t('union.selectSpouse')}</Label>
@@ -425,9 +252,9 @@ export function AddPersonModal({
                                             <SelectItem key={u.id} value={u.id}>
                                                 {spouse
                                                     ? getPersonName(
-                                                        spouse.english_name,
-                                                        spouse.urdu_name
-                                                    )
+                                                          spouse.english_name,
+                                                          spouse.urdu_name
+                                                      )
                                                     : t('union.noSpouse')}
                                             </SelectItem>
                                         );
@@ -454,7 +281,9 @@ export function AddPersonModal({
                                     {t('union.none')}
                                 </button>
                                 {eligibleChildren.map((child) => {
-                                    const selected = selectedChildIds.includes(child.id);
+                                    const selected = selectedChildIds.includes(
+                                        child.id
+                                    );
                                     return (
                                         <button
                                             key={child.id}
@@ -463,7 +292,9 @@ export function AddPersonModal({
                                             onClick={() =>
                                                 setSelectedChildIds((current) =>
                                                     selected
-                                                        ? current.filter((id) => id !== child.id)
+                                                        ? current.filter(
+                                                              (id) => id !== child.id
+                                                          )
                                                         : [...current, child.id]
                                                 )
                                             }
@@ -484,18 +315,11 @@ export function AddPersonModal({
                         </div>
                     )}
 
-                    <div className="space-y-1.5">
-                        <Label htmlFor="notes">{t('person.notes')}</Label>
-                        <Textarea
-                            id="notes"
-                            value={formData.notes}
-                            onChange={(e) =>
-                                setFormData((d) => ({ ...d, notes: e.target.value }))
-                            }
-                            rows={3}
-                            placeholder={t('person.notes')}
-                        />
-                    </div>
+                    <PersonFormFields
+                        idPrefix="add"
+                        formData={formData}
+                        onChange={setFormData}
+                    />
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose}>

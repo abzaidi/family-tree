@@ -51,12 +51,17 @@ export const en: TranslationStrings = {
     // Person
     'person.englishName': 'English Name',
     'person.urduName': 'Urdu Name',
+    'person.englishNamePlaceholder': 'English name',
+    'person.urduNamePlaceholder': 'اردو نام',
     'person.gender': 'Gender',
     'person.male': 'Male',
     'person.female': 'Female',
     'person.other': 'Other',
+    'person.otherOption': 'Other',
+    'person.enterManually': 'Enter a value manually',
     'person.birthYear': 'Birth Year',
     'person.deathYear': 'Death Year',
+    'person.yearPlaceholder': 'e.g. 1950',
     'person.notes': 'Notes',
     'person.parents': 'Parents',
     'person.siblings': 'Siblings',
@@ -64,6 +69,26 @@ export const en: TranslationStrings = {
     'person.children': 'Children',
     'person.born': 'Born',
     'person.died': 'Died',
+    'person.serialNumber': 'Serial Number',
+    'person.country': 'Country',
+    'person.stateProvince': 'State / Province',
+    'person.city': 'City',
+    'person.countryCode': 'Country Code',
+    'person.countryCodeAuto': 'Filled from country',
+    'person.nationalId': 'National Identity Card Number',
+    'person.nationalIdPlaceholder': 'Enter ID number',
+    'person.location': 'Location',
+    'person.countryPlaceholder': 'Select country',
+    'person.countrySearch': 'Search countries...',
+    'person.statePlaceholder': 'Select state / province',
+    'person.stateSearch': 'Search states...',
+    'person.cityPlaceholder': 'Select city',
+    'person.citySearch': 'Search cities...',
+    'person.customStatePlaceholder': 'Enter state / province',
+    'person.customCityPlaceholder': 'Enter city',
+    'person.selectCountryFirst': 'Select a country first',
+    'person.selectStateFirst': 'Select a state first',
+    'person.nameRequired': 'At least one name is required',
 
     // Actions
     'action.add': 'Add',
@@ -111,8 +136,14 @@ export const en: TranslationStrings = {
 
     // Search
     'search.title': 'Search Family Tree',
-    'search.placeholder': 'Type a name to search...',
+    'search.placeholder': 'Search by name or serial...',
     'search.noResults': 'No results found',
+
+    // Family statistics
+    'stats.title': 'Family',
+    'stats.total': 'Total',
+    'stats.males': 'Males',
+    'stats.females': 'Females',
 
     // States
     'state.loading': 'Loading...',

@@ -13,6 +13,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { PersonNode } from './PersonNode';
 import { UnionNode } from './UnionNode';
+import { FamilyStats } from './FamilyStats';
 import { useTreeStore } from '@/store/tree-store';
 import { buildTreeLayout } from '@/lib/tree/layout-engine';
 
@@ -87,7 +88,7 @@ function FamilyCanvasInner() {
     }, [focusPersonId, nodes, setCenter]);
 
     return (
-        <div className="w-full h-full">
+        <div className="relative w-full h-full">
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -114,6 +115,7 @@ function FamilyCanvasInner() {
                 />
                 <Controls showInteractive={false} />
             </ReactFlow>
+            <FamilyStats />
         </div>
     );
 }

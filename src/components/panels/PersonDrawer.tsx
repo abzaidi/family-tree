@@ -18,10 +18,15 @@ import {
     Trash2,
     User,
     Calendar,
+    MapPin,
+    Phone,
+    IdCard,
+    Hash,
 } from 'lucide-react';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 import { useAuth } from '@/hooks/useAuth';
+import { formatSerialNumber } from '@/lib/person/format';
 import type { Person } from '@/types';
 
 interface PersonDrawerProps {
@@ -47,7 +52,20 @@ export function PersonDrawer({
     if (!person) return null;
 
     const displayName = getPersonName(person.english_name, person.urdu_name);
+    const serial = formatSerialNumber(person.serial_number);
     const isFemale = person.gender === 'female';
+    const locationParts = [
+        person.city_name,
+        person.state_province,
+        person.country_name,
+    ].filter(Boolean);
+    const locationLabel = locationParts.join(', ');
+
+    const personLabel = (p: Person) => {
+        const name = getPersonName(p.english_name, p.urdu_name);
+        const personSerial = formatSerialNumber(p.serial_number);
+        return personSerial ? `${name} (${personSerial})` : name;
+    };
 
     // Get spouses
     const personUnions = unions.filter(
@@ -135,9 +153,16 @@ export function PersonDrawer({
                                     >
                                         {displayName}
                                     </SheetTitle>
-                                    <Badge variant="secondary" className="mt-1 text-xs">
-                                        {t(`person.${person.gender}`)}
-                                    </Badge>
+                                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <Badge variant="secondary" className="text-xs">
+                                            {t(`person.${person.gender}`)}
+                                        </Badge>
+                                        {serial && (
+                                            <Badge variant="outline" className="text-xs font-mono">
+                                                {serial}
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </SheetHeader>
@@ -176,6 +201,46 @@ export function PersonDrawer({
                                 </div>
                             )}
 
+                            {serial && (
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                    <Hash className="w-3.5 h-3.5" />
+                                    <span>
+                                        {t('person.serialNumber')}: {serial}
+                                    </span>
+                                </div>
+                            )}
+
+                            {locationLabel && (
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground uppercase mb-1 flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        {t('person.location')}
+                                    </p>
+                                    <p className="text-sm text-foreground/80">{locationLabel}</p>
+                                </div>
+                            )}
+
+                            {person.phone_country_code && (
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                    <Phone className="w-3.5 h-3.5" />
+                                    <span>
+                                        {t('person.countryCode')}: {person.phone_country_code}
+                                    </span>
+                                </div>
+                            )}
+
+                            {canEdit && person.national_identity_number && (
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground uppercase mb-1 flex items-center gap-1.5">
+                                        <IdCard className="w-3.5 h-3.5" />
+                                        {t('person.nationalId')}
+                                    </p>
+                                    <p className="text-sm text-foreground/80 font-mono">
+                                        {person.national_identity_number}
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Notes */}
                             {person.notes && (
                                 <div>
@@ -202,7 +267,7 @@ export function PersonDrawer({
                                                 className="block text-sm text-blue-600 dark:text-blue-400 hover:underline"
                                                 onClick={() => useTreeStore.getState().selectPerson(p.id)}
                                             >
-                                                {getPersonName(p.english_name, p.urdu_name)}
+                                                {personLabel(p)}
                                             </button>
                                         ))}
                                     </div>
@@ -229,10 +294,7 @@ export function PersonDrawer({
                                                         .selectPerson(sibling.id)
                                                 }
                                             >
-                                                {getPersonName(
-                                                    sibling.english_name,
-                                                    sibling.urdu_name
-                                                )}
+                                                {personLabel(sibling)}
                                             </button>
                                         ))}
                                     </div>
@@ -255,7 +317,7 @@ export function PersonDrawer({
                                                 className="block text-sm text-pink-600 dark:text-pink-400 hover:underline"
                                                 onClick={() => useTreeStore.getState().selectPerson(s.id)}
                                             >
-                                                {getPersonName(s.english_name, s.urdu_name)}
+                                                {personLabel(s)}
                                             </button>
                                         ))}
                                     </div>
@@ -282,7 +344,7 @@ export function PersonDrawer({
                                                         useTreeStore.getState().selectPerson(c.id)
                                                     }
                                                 >
-                                                    {getPersonName(c.english_name, c.urdu_name)}
+                                                    {personLabel(c)}
                                                 </button>
                                             ))}
                                     </div>

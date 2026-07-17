@@ -16,13 +16,30 @@ export interface DeleteContext {
 
 export interface Person {
   id: string;
+  serial_number: number;
   english_name: string;
   urdu_name: string;
   gender: Gender;
   birth_year: number | null;
   death_year: number | null;
   notes: string | null;
+  country_iso_code: string | null;
+  country_name: string | null;
+  state_province_code: string | null;
+  state_province: string | null;
+  city_name: string | null;
+  phone_country_code: string | null;
   deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  /** Populated only for editors/admins; never exposed to viewers. */
+  national_identity_number?: string | null;
+}
+
+export interface PersonPrivateDetails {
+  id: string;
+  person_id: string;
+  national_identity_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -84,6 +101,13 @@ export interface PersonFormData {
   birth_year: number | null;
   death_year: number | null;
   notes: string;
+  country_iso_code: string;
+  country_name: string;
+  state_province_code: string;
+  state_province: string;
+  city_name: string;
+  phone_country_code: string;
+  national_identity_number: string;
 }
 
 // Tree rendering types

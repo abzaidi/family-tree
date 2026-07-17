@@ -12,6 +12,11 @@ import {
 import { User, Heart } from 'lucide-react';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
+import {
+    formatSerialNumber,
+    personMatchesQuery,
+    personSearchValue,
+} from '@/lib/person/format';
 
 export function SearchCommand() {
     const {
@@ -46,12 +51,7 @@ export function SearchCommand() {
 
     const filtered = useMemo(() => {
         if (!query.trim()) return activePersons.slice(0, 20);
-        const q = query.toLowerCase();
-        return activePersons.filter(
-            (p) =>
-                p.english_name.toLowerCase().includes(q) ||
-                p.urdu_name.includes(query) // Urdu is case-sensitive
-        );
+        return activePersons.filter((p) => personMatchesQuery(p, query));
     }, [query, activePersons]);
 
     const handleSelect = useCallback(
@@ -128,10 +128,12 @@ export function SearchCommand() {
             <CommandList>
                 <CommandEmpty>{t('search.noResults')}</CommandEmpty>
                 <CommandGroup heading={t('search.title')}>
-                    {filtered.map((person) => (
+                    {filtered.map((person) => {
+                        const serial = formatSerialNumber(person.serial_number);
+                        return (
                         <CommandItem
                             key={person.id}
-                            value={`${person.english_name} ${person.urdu_name}`}
+                            value={personSearchValue(person)}
                             onSelect={() => handleSelect(person.id)}
                             className="cursor-pointer"
                         >
@@ -152,16 +154,25 @@ export function SearchCommand() {
                                     <p className="text-sm font-medium truncate">
                                         {getPersonName(person.english_name, person.urdu_name)}
                                     </p>
-                                    {person.birth_year && (
-                                        <p className="text-xs text-muted-foreground">
-                                            {person.birth_year}
-                                            {person.death_year ? ` — ${person.death_year}` : ''}
-                                        </p>
-                                    )}
+                                    <p className="text-xs text-muted-foreground truncate">
+                                        {[
+                                            serial,
+                                            person.birth_year
+                                                ? `${person.birth_year}${
+                                                      person.death_year
+                                                          ? ` — ${person.death_year}`
+                                                          : ''
+                                                  }`
+                                                : null,
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' · ')}
+                                    </p>
                                 </div>
                             </div>
                         </CommandItem>
-                    ))}
+                        );
+                    })}
                 </CommandGroup>
             </CommandList>
         </CommandDialog>
