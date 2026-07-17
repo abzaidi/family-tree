@@ -104,9 +104,11 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                         }`}
                 />
 
-                <div className="px-4 py-3 overflow-hidden">
+                <div className={`px-4 overflow-hidden ${
+                    locale === 'ur' ? 'py-1' : 'py-3'
+                }`}>
                     {/* Gender icon and Name */}
-                    <div className="flex items-start gap-2.5 mb-1">
+                    <div className={`flex gap-2.5 mb-1 ${locale === 'ur' ? 'items-center' : 'items-start'}`}>
                         <div
                             className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${isFemale
                                 ? 'bg-pink-50 text-pink-500 dark:bg-pink-950/60 dark:text-pink-300'
@@ -120,8 +122,11 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                             )}
                         </div>
                         <span
-                            className={`min-w-0 flex-1 line-clamp-2 font-semibold text-[15px] text-foreground leading-snug break-words ${locale === 'ur' ? 'font-urdu' : ''
-                                }`}
+                            className={`min-w-0 flex-1 font-semibold text-foreground break-words ${
+                                locale === 'ur'
+                                    ? 'font-urdu text-[14px] leading-[2.25] pb-1 overflow-visible'
+                                    : 'line-clamp-2 text-[15px] leading-snug'
+                            }`}
                             dir={locale === 'ur' ? 'rtl' : 'ltr'}
                             style={{ wordBreak: 'break-word' }}
                         >
@@ -131,7 +136,9 @@ function PersonNodeComponent({ data, id }: NodeProps) {
 
                     {/* Year range */}
                     {yearRange && (
-                        <p className="text-xs text-muted-foreground mt-1.5 pl-10">{yearRange}</p>
+                        <p className={`text-xs text-muted-foreground pl-10 ${
+                            locale === 'ur' ? 'mt-0' : 'mt-1.5'
+                        }`}>{yearRange}</p>
                     )}
                 </div>
 
