@@ -2,7 +2,7 @@ import type { TranslationStrings } from '@/types';
 
 export const en: TranslationStrings = {
     // App
-    'app.title': 'Family Tree',
+    'app.title': 'Zaidi Family Tree',
     'app.subtitle': 'Explore your ancestry',
 
     // Auth

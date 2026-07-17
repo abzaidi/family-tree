@@ -8,6 +8,8 @@ const UNION_NODE_SIZE = 24;
 const H_GAP = 80;
 const V_GAP = 140;
 const SPOUSE_GAP = 320;
+const COUPLE_WIDTH = SPOUSE_GAP + NODE_WIDTH;
+const EDGE_STYLE = { stroke: '#94a3b8', strokeWidth: 2 };
 
 export interface LayoutResult {
     nodes: Node[];
@@ -60,14 +62,14 @@ export function buildTreeLayout(
                 return child && !child.deleted;
             });
 
-            let unionWidth = SPOUSE_GAP;
+            let unionWidth = COUPLE_WIDTH;
             if (children.length > 0) {
                 let childrenWidth = 0;
                 for (const childId of children) {
                     if (childrenWidth > 0) childrenWidth += H_GAP;
                     childrenWidth += calcSubtreeWidth(childId, new Set(visited));
                 }
-                unionWidth = Math.max(childrenWidth, SPOUSE_GAP);
+                unionWidth = Math.max(childrenWidth, COUPLE_WIDTH);
             }
             if (totalWidth > 0) totalWidth += H_GAP;
             totalWidth += unionWidth;
@@ -108,6 +110,20 @@ export function buildTreeLayout(
                 return child && !child.deleted;
             });
 
+            const renderSpouse = Boolean(spouseExists && spouseId && !positioned.has(spouseId));
+
+            // Nothing visible hangs off this union — render as a plain node
+            if (!renderSpouse && children.length === 0) {
+                positioned.set(personId, { x: centerX, y });
+                nodes.push({
+                    id: personId,
+                    type: 'person',
+                    position: { x: centerX - NODE_WIDTH / 2, y },
+                    data: { person },
+                });
+                return;
+            }
+
             let childrenWidth = 0;
             if (children.length > 0) {
                 children.forEach((childId, idx) => {
@@ -115,8 +131,6 @@ export function buildTreeLayout(
                     childrenWidth += calcSubtreeWidth(childId, new Set());
                 });
             }
-
-            const unionWidth = Math.max(childrenWidth, SPOUSE_GAP);
 
             // Single Union Couple spacing
             const primaryX = centerX - SPOUSE_GAP / 2;
@@ -133,7 +147,7 @@ export function buildTreeLayout(
                 data: { person },
             });
 
-            if (spouseExists && spouseId && !positioned.has(spouseId)) {
+            if (renderSpouse && spouseId) {
                 positioned.set(spouseId, { x: spouseX, y });
                 nodes.push({
                     id: spouseId,
@@ -147,7 +161,7 @@ export function buildTreeLayout(
                     source: spouseId,
                     target: unionNodeId,
                     type: 'smoothstep',
-                    style: { stroke: '#f472b6', strokeWidth: 2, strokeDasharray: '6 3' },
+                    style: EDGE_STYLE,
                     sourceHandle: 'bottom',
                     targetHandle: 'top',
                 });
@@ -157,7 +171,7 @@ export function buildTreeLayout(
                 id: unionNodeId,
                 type: 'union',
                 position: { x: unionDotX - UNION_NODE_SIZE / 2, y: unionNodeY },
-                data: { union },
+                data: { union, hasChildren: children.length > 0 },
             });
 
             edges.push({
@@ -165,7 +179,7 @@ export function buildTreeLayout(
                 source: personId,
                 target: unionNodeId,
                 type: 'smoothstep',
-                style: { stroke: '#94a3b8', strokeWidth: 2 },
+                style: EDGE_STYLE,
                 sourceHandle: 'bottom',
                 targetHandle: 'top',
             });
@@ -183,7 +197,7 @@ export function buildTreeLayout(
                         source: unionNodeId,
                         target: childId,
                         type: 'smoothstep',
-                        style: { stroke: '#94a3b8', strokeWidth: 2 },
+                        style: EDGE_STYLE,
                         sourceHandle: 'bottom',
                         targetHandle: 'top',
                     });
@@ -222,6 +236,10 @@ export function buildTreeLayout(
                 return child && !child.deleted && !visited.has(cid);
             });
 
+            const renderSpouse = Boolean(spouseExists && spouseId && !positioned.has(spouseId));
+            // Skip unions with nothing visible to connect (avoids orphan edge stubs)
+            if (!renderSpouse && children.length === 0) return;
+
             let childrenWidth = 0;
             if (children.length > 0) {
                 children.forEach((childId, idx) => {
@@ -240,7 +258,7 @@ export function buildTreeLayout(
                 id: unionNodeId,
                 type: 'union',
                 position: { x: unionDotX - UNION_NODE_SIZE / 2, y: unionNodeY },
-                data: { union },
+                data: { union, hasChildren: children.length > 0 },
             });
 
             edges.push({
@@ -248,12 +266,12 @@ export function buildTreeLayout(
                 source: personId,
                 target: unionNodeId,
                 type: 'smoothstep',
-                style: { stroke: '#94a3b8', strokeWidth: 2 },
+                style: EDGE_STYLE,
                 sourceHandle: 'bottom',
                 targetHandle: 'top',
             });
 
-            if (spouseExists && spouseId && !positioned.has(spouseId)) {
+            if (renderSpouse && spouseId) {
                 positioned.set(spouseId, { x: spouseX, y });
                 nodes.push({
                     id: spouseId,
@@ -267,7 +285,7 @@ export function buildTreeLayout(
                     source: spouseId,
                     target: unionNodeId,
                     type: 'smoothstep',
-                    style: { stroke: '#f472b6', strokeWidth: 2, strokeDasharray: '6 3' },
+                    style: EDGE_STYLE,
                     sourceHandle: 'bottom',
                     targetHandle: 'top',
                 });
@@ -286,7 +304,7 @@ export function buildTreeLayout(
                         source: unionNodeId,
                         target: childId,
                         type: 'smoothstep',
-                        style: { stroke: '#94a3b8', strokeWidth: 2 },
+                        style: EDGE_STYLE,
                         sourceHandle: 'bottom',
                         targetHandle: 'top',
                     });
@@ -315,6 +333,10 @@ export function buildTreeLayout(
                 return child && !child.deleted && !visited.has(cid);
             });
 
+            const renderSpouse = Boolean(spouseExists && spouseId && !positioned.has(spouseId));
+            // Skip unions with nothing visible to connect (avoids orphan edge stubs)
+            if (!renderSpouse && children.length === 0) return;
+
             let childrenWidth = 0;
             if (children.length > 0) {
                 children.forEach((childId, idx) => {
@@ -332,7 +354,7 @@ export function buildTreeLayout(
                 id: unionNodeId,
                 type: 'union',
                 position: { x: unionDotX - UNION_NODE_SIZE / 2, y: unionNodeY },
-                data: { union },
+                data: { union, hasChildren: children.length > 0 },
             });
 
             edges.push({
@@ -340,12 +362,12 @@ export function buildTreeLayout(
                 source: personId,
                 target: unionNodeId,
                 type: 'smoothstep',
-                style: { stroke: '#94a3b8', strokeWidth: 2 },
+                style: EDGE_STYLE,
                 sourceHandle: 'bottom',
                 targetHandle: 'top',
             });
 
-            if (spouseExists && spouseId && !positioned.has(spouseId)) {
+            if (renderSpouse && spouseId) {
                 positioned.set(spouseId, { x: spouseX, y });
                 nodes.push({
                     id: spouseId,
@@ -359,7 +381,7 @@ export function buildTreeLayout(
                     source: spouseId,
                     target: unionNodeId,
                     type: 'smoothstep',
-                    style: { stroke: '#f472b6', strokeWidth: 2, strokeDasharray: '6 3' },
+                    style: EDGE_STYLE,
                     sourceHandle: 'bottom',
                     targetHandle: 'top',
                 });
@@ -378,7 +400,7 @@ export function buildTreeLayout(
                         source: unionNodeId,
                         target: childId,
                         type: 'smoothstep',
-                        style: { stroke: '#94a3b8', strokeWidth: 2 },
+                        style: EDGE_STYLE,
                         sourceHandle: 'bottom',
                         targetHandle: 'top',
                     });

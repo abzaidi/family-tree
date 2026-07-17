@@ -61,7 +61,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                     relative cursor-pointer select-none
                     rounded-2xl border-2 bg-white shadow-lg
                     transition-colors duration-200
-                    w-[260px]
+                    w-[260px] h-[110px]
                     ${isFemale
                         ? 'border-pink-200 hover:border-pink-400 hover:shadow-pink-100'
                         : 'border-blue-200 hover:border-blue-400 hover:shadow-blue-100'
@@ -80,7 +80,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                         }`}
                 />
 
-                <div className="px-4 py-3">
+                <div className="px-4 py-3 overflow-hidden">
                     {/* Gender icon and Name */}
                     <div className="flex items-start gap-2.5 mb-1">
                         <div
@@ -94,7 +94,7 @@ function PersonNodeComponent({ data, id }: NodeProps) {
                             )}
                         </div>
                         <span
-                            className={`font-semibold text-[15px] text-gray-800 leading-snug break-words ${locale === 'ur' ? 'font-urdu' : ''
+                            className={`min-w-0 flex-1 line-clamp-2 font-semibold text-[15px] text-gray-800 leading-snug break-words ${locale === 'ur' ? 'font-urdu' : ''
                                 }`}
                             dir={locale === 'ur' ? 'rtl' : 'ltr'}
                             style={{ wordBreak: 'break-word' }}

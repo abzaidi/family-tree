@@ -8,7 +8,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Family Tree | خاندانی شجرہ",
+  title: "Zaidi Family Tree | زیدی خاندانی شجرہ",
   description: "Explore your family tree spanning generations. Interactive, bilingual family tree application.",
 };
 
