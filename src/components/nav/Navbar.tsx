@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -8,10 +9,12 @@ import {
     ChevronsUpDown,
     TreePine,
     UserRoundPlus,
+    Info,
 } from 'lucide-react';
 import { LanguageSwitch } from './LanguageSwitch';
 import { UserMenu } from './UserMenu';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { AboutMovementSheet } from '@/components/panels/AboutMovementSheet';
 import { useTreeStore } from '@/store/tree-store';
 import { useI18n } from '@/lib/i18n/context';
 
@@ -23,88 +26,107 @@ interface NavbarProps {
 export function Navbar({ canEdit, onInsertPerson }: NavbarProps) {
     const { setSearchOpen, expandAll, collapseAll } = useTreeStore();
     const { t } = useI18n();
+    const [aboutOpen, setAboutOpen] = useState(false);
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 shadow-sm backdrop-blur-xl">
-            <div className="flex items-center justify-between h-14 px-4">
-                {/* Left: Logo */}
-                <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
-                        <TreePine className="w-4 h-4 text-white" />
+        <>
+            <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/80 shadow-sm backdrop-blur-xl">
+                <div className="flex items-center justify-between h-14 px-4">
+                    {/* Left: Logo */}
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+                            <TreePine className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="font-bold text-base text-foreground tracking-tight">
+                            {t('app.title')}
+                        </span>
                     </div>
-                    <span className="font-bold text-base text-foreground tracking-tight">
-                        {t('app.title')}
-                    </span>
-                </div>
 
-                {/* Center: Search */}
-                <button
-                    onClick={() => setSearchOpen(true)}
-                    className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg border border-border bg-muted/60 hover:bg-muted transition-colors text-sm text-muted-foreground min-w-[280px] md:min-w-[320px] lg:min-w-[400px]"
-                    aria-label={t('nav.search')}
-                >
-                    <Search className="w-4 h-4" />
-                    <span className="flex-1 text-left">{t('nav.search')}</span>
-                    <kbd className="text-[10px] bg-background border border-border rounded px-1.5 py-0.5 font-mono text-muted-foreground">
-                        ⌘K
-                    </kbd>
-                </button>
-
-                {/* Right: Controls */}
-                <div className="flex items-center gap-1">
-                    {/* Search (mobile) */}
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="sm:hidden"
+                    {/* Center: Search */}
+                    <button
                         onClick={() => setSearchOpen(true)}
+                        className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-lg border border-border bg-muted/60 hover:bg-muted transition-colors text-sm text-muted-foreground min-w-[280px] md:min-w-[320px] lg:min-w-[400px]"
                         aria-label={t('nav.search')}
                     >
                         <Search className="w-4 h-4" />
-                    </Button>
+                        <span className="flex-1 text-left">{t('nav.search')}</span>
+                        <kbd className="text-[10px] bg-background border border-border rounded px-1.5 py-0.5 font-mono text-muted-foreground">
+                            ⌘K
+                        </kbd>
+                    </button>
 
-                    {canEdit && (
+                    {/* Right: Controls */}
+                    <div className="flex items-center gap-1">
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={onInsertPerson}
-                            aria-label={t('action.insertMiddle')}
-                            title={t('action.insertMiddle')}
+                            onClick={() => setAboutOpen(true)}
+                            aria-label={t('about.nav')}
+                            title={t('about.nav')}
                             className="gap-1.5"
                         >
-                            <UserRoundPlus className="w-4 h-4" />
-                            <span className="hidden xl:inline">
-                                {t('action.insertMiddle')}
+                            <Info className="w-4 h-4" />
+                            <span className="hidden md:inline">
+                                {t('about.nav')}
                             </span>
                         </Button>
-                    )}
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={expandAll}
-                        aria-label={t('nav.expandAll')}
-                        title={t('nav.expandAll')}
-                    >
-                        <ChevronsUpDown className="w-4 h-4" />
-                    </Button>
+                        {/* Search (mobile) */}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="sm:hidden"
+                            onClick={() => setSearchOpen(true)}
+                            aria-label={t('nav.search')}
+                        >
+                            <Search className="w-4 h-4" />
+                        </Button>
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={collapseAll}
-                        aria-label={t('nav.collapseAll')}
-                        title={t('nav.collapseAll')}
-                    >
-                        <ChevronsDownUp className="w-4 h-4" />
-                    </Button>
+                        {canEdit && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={onInsertPerson}
+                                aria-label={t('action.insertMiddle')}
+                                title={t('action.insertMiddle')}
+                                className="gap-1.5"
+                            >
+                                <UserRoundPlus className="w-4 h-4" />
+                                <span className="hidden xl:inline">
+                                    {t('action.insertMiddle')}
+                                </span>
+                            </Button>
+                        )}
 
-                    <Separator orientation="vertical" className="h-6 mx-1" />
-                    <ThemeToggle />
-                    <LanguageSwitch />
-                    <UserMenu />
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={expandAll}
+                            aria-label={t('nav.expandAll')}
+                            title={t('nav.expandAll')}
+                        >
+                            <ChevronsUpDown className="w-4 h-4" />
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={collapseAll}
+                            aria-label={t('nav.collapseAll')}
+                            title={t('nav.collapseAll')}
+                        >
+                            <ChevronsDownUp className="w-4 h-4" />
+                        </Button>
+
+                        <Separator orientation="vertical" className="h-6 mx-1" />
+                        <ThemeToggle />
+                        <LanguageSwitch />
+                        <UserMenu />
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+
+            <AboutMovementSheet open={aboutOpen} onOpenChange={setAboutOpen} />
+        </>
     );
 }

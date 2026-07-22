@@ -27,6 +27,31 @@ export const en: TranslationStrings = {
     'nav.language': 'Language',
     'nav.manageUsers': 'Manage users',
 
+    // About / movement
+    'about.nav': 'About',
+    'about.title': 'About this tree',
+    'about.subtitle': 'Movement, donations, and contact',
+    'about.movementSection': 'Movement',
+    'about.movementHeading': 'Organized & maintained by',
+    'about.movementBlurb':
+        'This family tree is organized and maintained by Tehreeq e Muhiban e Ghulaman e Mustafa.',
+    'about.facebookPage': 'Facebook page',
+    'about.donateSection': 'Support the project',
+    'about.donateBlurb':
+        'If you wish to support this work, you can donate via JazzCash.',
+    'about.jazzcash': 'JazzCash',
+    'about.mobileWallet': 'Mobile wallet',
+    'about.accountNumber': 'Account number',
+    'about.accountHolder': 'Account holder',
+    'about.contactSection': 'Contact',
+    'about.whatsapp': 'WhatsApp',
+    'about.number': 'Number',
+    'about.contactPerson': 'Contact person',
+    'about.openWhatsApp': 'Chat on WhatsApp',
+    'about.copy': 'Copy',
+    'about.copied': 'Copied to clipboard',
+    'about.copyFailed': 'Could not copy',
+
     // Theme
     'theme.label': 'Theme',
     'theme.light': 'Light',

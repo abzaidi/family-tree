@@ -27,6 +27,31 @@ export const ur: TranslationStrings = {
     'nav.language': 'زبان',
     'nav.manageUsers': 'صارفین کا انتظام',
 
+    // About / movement
+    'about.nav': 'تعارف',
+    'about.title': 'اس شجرے کے بارے میں',
+    'about.subtitle': 'تحریک، عطیات، اور رابطہ',
+    'about.movementSection': 'تحریک',
+    'about.movementHeading': 'منتظم و نگہبان',
+    'about.movementBlurb':
+        'یہ خاندانی شجرہ تحریکِ محبانِ غلامانِ مصطفیٰ کی تنظیم و نگرانی میں ہے۔',
+    'about.facebookPage': 'فیس بک صفحہ',
+    'about.donateSection': 'منصوبے کی حمایت',
+    'about.donateBlurb':
+        'اگر آپ اس کام کی حمایت کرنا چاہتے ہیں تو جاز کیش کے ذریعے عطیہ کر سکتے ہیں۔',
+    'about.jazzcash': 'جاز کیش',
+    'about.mobileWallet': 'موبائل والیٹ',
+    'about.accountNumber': 'اکاؤنٹ نمبر',
+    'about.accountHolder': 'اکاؤنٹ ہولڈر',
+    'about.contactSection': 'رابطہ',
+    'about.whatsapp': 'واٹس ایپ',
+    'about.number': 'نمبر',
+    'about.contactPerson': 'رابطہ شخص',
+    'about.openWhatsApp': 'واٹس ایپ پر بات کریں',
+    'about.copy': 'کاپی کریں',
+    'about.copied': 'کلپ بورڈ پر کاپی ہو گیا',
+    'about.copyFailed': 'کاپی نہیں ہو سکی',
+
     // Theme
     'theme.label': 'تھیم',
     'theme.light': 'روشن',
