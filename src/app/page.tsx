@@ -258,7 +258,7 @@ function TreeApp() {
     <div className="h-screen flex flex-col overflow-hidden">
       <Navbar onInsertPerson={handleInsertPerson} canEdit={canEdit} />
 
-      <main className="flex-1 relative mt-14">
+      <main className="flex-1 relative mt-[5.5rem]">
         {hasRoot ? (
           <FamilyCanvas />
         ) : (

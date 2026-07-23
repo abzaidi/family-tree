@@ -36,6 +36,9 @@ export const ur: TranslationStrings = {
     'about.movementBlurb':
         'یہ خاندانی شجرہ تحریکِ محبانِ غلامانِ مصطفیٰ کی تنظیم و نگرانی میں ہے۔',
     'about.facebookPage': 'فیس بک صفحہ',
+    'about.banner':
+        'تحریکِ محبانِ غلامانِ مصطفیٰ کی جانب سے',
+    'about.bannerHint': 'عطیات اور رابطے کے لیے دبائیں',
     'about.donateSection': 'منصوبے کی حمایت',
     'about.donateBlurb':
         'اگر آپ اس کام کی حمایت کرنا چاہتے ہیں تو جاز کیش کے ذریعے عطیہ کر سکتے ہیں۔',

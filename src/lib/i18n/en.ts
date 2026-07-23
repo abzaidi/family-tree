@@ -36,6 +36,9 @@ export const en: TranslationStrings = {
     'about.movementBlurb':
         'This family tree is organized and maintained by Tehreeq e Muhiban e Ghulaman e Mustafa.',
     'about.facebookPage': 'Facebook page',
+    'about.banner':
+        'A Movement by Tehreeq e Muhiban e Ghulaman e Mustafa',
+    'about.bannerHint': 'Tap for donations & contact',
     'about.donateSection': 'Support the project',
     'about.donateBlurb':
         'If you wish to support this work, you can donate via JazzCash.',
